@@ -43,3 +43,7 @@ All list-performance tasks are mirrored on a public Notion board so you can brow
 https://honey-digit-2bf.notion.site/18208897bf51461a841214b5f8f9156f?v=515a5db545604338bf6fbab6c30bac69
 
 The link is read-only - you can view every task without an account. If you have a Notion account and want to track your own progress, open the board, click `Duplicate` in the top-right to copy it into your own workspace, and then flip rows from `Todo` to `Done` as you work through them.
+
+## Slides from workshops
+
+- [Native performance and memory profiling](<slides/AppJS - Native perf and memory (shareable).pptx>) (with notes per slide)
