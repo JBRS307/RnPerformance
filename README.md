@@ -46,4 +46,13 @@ The link is read-only - you can view every task without an account. If you have 
 
 ## Slides from workshops
 
+- [React re-renders and DevTools](<slides/AppJS - React and DevTools.pptx>)
 - [Native performance and memory profiling](<slides/AppJS - Native perf and memory (shareable).pptx>) (with notes per slide)
+
+## Exercise checkpoints
+- React re-renders and DevTools
+    - `react-and-devtools-X.X` 
+- List performance
+    - `list-performance-XX`
+- Native performance and memory profiling
+    - `native-performance-XX` 
