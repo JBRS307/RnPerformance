@@ -1,4 +1,4 @@
-import { useContext, useState } from "react";
+import { useCallback, useContext, useState } from "react";
 import { useRouter } from "expo-router";
 import { GestureResponderEvent, Image, Text, TouchableOpacity, View } from "react-native";
 
@@ -14,29 +14,37 @@ import { formatRelativeTime } from "@/utils/feed-utils";
 
 interface PostDetailHeaderProps {
   post: FeedPost;
-  isLiked: boolean;
-  likesCount: number;
+  isLikedInitial: boolean,
+  likesCountInitial: number,
   shareCount: number;
   commentsCount: number;
   hasNewComments: boolean;
-  onLike: () => void;
   onShareComplete: () => void;
 }
 
 export const PostDetailHeader = ({
   post,
-  isLiked,
-  likesCount,
   shareCount,
+  isLikedInitial,
+  likesCountInitial,
   commentsCount,
   hasNewComments,
-  onLike,
   onShareComplete
 }: PostDetailHeaderProps) => {
   const colors = useContext(ColorsContext);
   const router = useRouter();
+  const [isLiked, setIsLiked] = useState(isLikedInitial);
+  const [likesCount, setLikesCount] = useState(likesCountInitial);
   const [showOptionsMenu, setShowOptionsMenu] = useState(false);
   const [menuAnchor, setMenuAnchor] = useState<{ x: number; y: number } | undefined>();
+
+  const handleLike = useCallback(() => {
+    setIsLiked(prevIsLiked => {
+      const nextIsLiked = !prevIsLiked;
+      setLikesCount(prevLikesCount => prevLikesCount + (nextIsLiked ? 1 : -1));
+      return nextIsLiked;
+    })
+  }, []);
 
   return (
     <View>
@@ -104,7 +112,7 @@ export const PostDetailHeader = ({
         }}
       >
         <View style={{ flexDirection: "row", alignItems: "center", gap: 14 }}>
-          <LikeButton isLiked={isLiked} colors={colors} onPress={onLike} />
+          <LikeButton isLiked={isLiked} colors={colors} onPress={handleLike} />
           <ShareButton
             postId={post.id}
             username={post.user.username}
