@@ -37,12 +37,9 @@ const PostDetailScreen = () => {
   const inputRef = useRef<TextInput>(null);
   const prevCommentsLengthRef = useRef(0);
   const [post, setPost] = useState<FeedPost | null>(null);
-  const [isLikedInitial, setIsLikedInitial] = useState(false);
-  const [likesCountInitial, setLikesCountInitial] = useState(0);
   const [comments, setComments] = useState<FeedComment[]>([]);
   const [newComment, setNewComment] = useState("");
   const [replyInfo, setReplyInfo] = useState<ReplyInfo | null>(null);
-  const [shareCount, setShareCount] = useState(0);
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? "light"];
 
@@ -50,8 +47,6 @@ const PostDetailScreen = () => {
     const foundPost = findPostForDetails(id);
     if (foundPost) {
       setPost(foundPost);
-      setIsLikedInitial(foundPost.isLiked);
-      setLikesCountInitial(foundPost.likes);
       setComments(foundPost.comments);
     }
   }, [id]);
@@ -186,18 +181,12 @@ const PostDetailScreen = () => {
         {/* Post Content and Comments List */}
         <FlatList
           data={comments}
-          extraData={[isLikedInitial, likesCountInitial, shareCount]}
+          extraData={[post.isLiked, post.likes, post.shares.length]}
           ListHeaderComponent={
             <PostDetailHeader
               post={post}
-              isLikedInitial={isLikedInitial}
-              likesCountInitial={likesCountInitial}
-              shareCount={shareCount}
               commentsCount={comments.length}
               hasNewComments={hasNewComments}
-              onShareComplete={() =>
-                setShareCount((prevShareCount) => prevShareCount + 1)
-              }
             />
           }
           renderItem={({ item }) => (

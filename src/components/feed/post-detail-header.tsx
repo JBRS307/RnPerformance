@@ -14,22 +14,14 @@ import { formatRelativeTime } from "@/utils/feed-utils";
 
 interface PostDetailHeaderProps {
   post: FeedPost;
-  isLikedInitial: boolean,
-  likesCountInitial: number,
-  shareCount: number;
   commentsCount: number;
   hasNewComments: boolean;
-  onShareComplete: () => void;
 }
 
 export const PostDetailHeader = ({
   post,
-  shareCount,
-  isLikedInitial,
-  likesCountInitial,
   commentsCount,
   hasNewComments,
-  onShareComplete
 }: PostDetailHeaderProps) => {
   const colors = useContext(ColorsContext);
   const router = useRouter();
@@ -92,13 +84,7 @@ export const PostDetailHeader = ({
 
       <ImageCarousel images={post.images} />
 
-      <InteractionsView
-        post={post}
-        isLikedInitial={isLikedInitial}
-        likesCountInitial={likesCountInitial}
-        shareCount={shareCount}
-        onShareComplete={onShareComplete}
-      />
+      <InteractionsView post={post} />
 
       {post.caption.length > 0 && (
         <View style={{ paddingHorizontal: 12, paddingTop: 4 }}>
@@ -154,25 +140,12 @@ export const PostDetailHeader = ({
   );
 };
 
-interface InteractionsViewProps {
-  post: FeedPost;
-  isLikedInitial: boolean;
-  likesCountInitial: number;
-  shareCount: number;
-  onShareComplete: () => void;
-}
-
-const InteractionsView = ({
-  post,
-  isLikedInitial,
-  likesCountInitial,
-  shareCount,
-  onShareComplete,
-}: InteractionsViewProps) => {
+const InteractionsView = ({ post }: { post: FeedPost }) => {
   const colors = useContext(ColorsContext);
   const router = useRouter();
-  const [isLiked, setIsLiked] = useState(isLikedInitial);
-  const [likesCount, setLikesCount] = useState(likesCountInitial);
+  const [isLiked, setIsLiked] = useState(post.isLiked);
+  const [likesCount, setLikesCount] = useState(post.likes);
+  const [shareCount, setShareCount] = useState(post.shares.length);
 
   const handleLike = useCallback(() => {
     setIsLiked(prevIsLiked => {
@@ -181,6 +154,10 @@ const InteractionsView = ({
       return nextIsLiked;
     })
   }, []);
+
+  const onShareComplete = () => {
+    setShareCount(prevShares => prevShares + 1);
+  };
 
   return (
     <>
