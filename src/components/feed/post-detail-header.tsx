@@ -33,18 +33,8 @@ export const PostDetailHeader = ({
 }: PostDetailHeaderProps) => {
   const colors = useContext(ColorsContext);
   const router = useRouter();
-  const [isLiked, setIsLiked] = useState(isLikedInitial);
-  const [likesCount, setLikesCount] = useState(likesCountInitial);
   const [showOptionsMenu, setShowOptionsMenu] = useState(false);
   const [menuAnchor, setMenuAnchor] = useState<{ x: number; y: number } | undefined>();
-
-  const handleLike = useCallback(() => {
-    setIsLiked(prevIsLiked => {
-      const nextIsLiked = !prevIsLiked;
-      setLikesCount(prevLikesCount => prevLikesCount + (nextIsLiked ? 1 : -1));
-      return nextIsLiked;
-    })
-  }, []);
 
   return (
     <View>
@@ -102,39 +92,13 @@ export const PostDetailHeader = ({
 
       <ImageCarousel images={post.images} />
 
-      <View
-        style={{
-          flexDirection: "row",
-          justifyContent: "space-between",
-          alignItems: "center",
-          paddingHorizontal: 12,
-          paddingVertical: 8
-        }}
-      >
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 14 }}>
-          <LikeButton isLiked={isLiked} colors={colors} onPress={handleLike} />
-          <ShareButton
-            postId={post.id}
-            username={post.user.username}
-            colors={colors}
-            onShareComplete={() => onShareComplete()}
-          />
-        </View>
-        <BookmarkButton initialIsBookmarked={post.isBookmarked} colors={colors} />
-      </View>
-
-      <View style={{ flexDirection: "row", alignItems: "center", gap: 8, paddingHorizontal: 12 }}>
-        <TouchableOpacity onPress={() => router.push(`/likes/${post.id}`)}>
-          <Text style={{ fontWeight: "600", fontSize: 14, color: colors.text }}>
-            {likesCount.toLocaleString()} likes
-          </Text>
-        </TouchableOpacity>
-        {shareCount > 0 && (
-          <Text style={{ fontSize: 14, color: colors.icon }}>
-            · {shareCount} {shareCount === 1 ? "share" : "shares"}
-          </Text>
-        )}
-      </View>
+      <InteractionsView
+        post={post}
+        isLikedInitial={isLikedInitial}
+        likesCountInitial={likesCountInitial}
+        shareCount={shareCount}
+        onShareComplete={onShareComplete}
+      />
 
       {post.caption.length > 0 && (
         <View style={{ paddingHorizontal: 12, paddingTop: 4 }}>
@@ -187,5 +151,72 @@ export const PostDetailHeader = ({
         </View>
       </View>
     </View>
+  );
+};
+
+interface InteractionsViewProps {
+  post: FeedPost;
+  isLikedInitial: boolean;
+  likesCountInitial: number;
+  shareCount: number;
+  onShareComplete: () => void;
+}
+
+const InteractionsView = ({
+  post,
+  isLikedInitial,
+  likesCountInitial,
+  shareCount,
+  onShareComplete,
+}: InteractionsViewProps) => {
+  const colors = useContext(ColorsContext);
+  const router = useRouter();
+  const [isLiked, setIsLiked] = useState(isLikedInitial);
+  const [likesCount, setLikesCount] = useState(likesCountInitial);
+
+  const handleLike = useCallback(() => {
+    setIsLiked(prevIsLiked => {
+      const nextIsLiked = !prevIsLiked;
+      setLikesCount(prevLikesCount => prevLikesCount + (nextIsLiked ? 1 : -1));
+      return nextIsLiked;
+    })
+  }, []);
+
+  return (
+    <>
+      <View
+        style={{
+          flexDirection: "row",
+          justifyContent: "space-between",
+          alignItems: "center",
+          paddingHorizontal: 12,
+          paddingVertical: 8
+        }}
+      >
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 14 }}>
+          <LikeButton isLiked={isLiked} colors={colors} onPress={handleLike} />
+          <ShareButton
+            postId={post.id}
+            username={post.user.username}
+            colors={colors}
+            onShareComplete={() => onShareComplete()}
+          />
+        </View>
+        <BookmarkButton initialIsBookmarked={post.isBookmarked} colors={colors} />
+      </View>
+
+      <View style={{ flexDirection: "row", alignItems: "center", gap: 8, paddingHorizontal: 12 }}>
+        <TouchableOpacity onPress={() => router.push(`/likes/${post.id}`)}>
+          <Text style={{ fontWeight: "600", fontSize: 14, color: colors.text }}>
+            {likesCount.toLocaleString()} likes
+          </Text>
+        </TouchableOpacity>
+        {shareCount > 0 && (
+          <Text style={{ fontSize: 14, color: colors.icon }}>
+            · {shareCount} {shareCount === 1 ? "share" : "shares"}
+          </Text>
+        )}
+      </View>
+    </>
   );
 };
