@@ -155,9 +155,9 @@ const InteractionsView = ({ post }: { post: FeedPost }) => {
     })
   }, []);
 
-  const onShareComplete = () => {
+  const onShareComplete = useCallback(() => {
     setShareCount(prevShares => prevShares + 1);
-  };
+  }, []);
 
   return (
     <>
