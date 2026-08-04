@@ -1,5 +1,6 @@
 import { forwardRef, useCallback, useImperativeHandle, useMemo, useRef, useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, ScrollView, Image } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, ScrollView } from "react-native";
+import { Image } from 'expo-image';
 
 import { Colors } from "@/constants/theme";
 import { FeedComment } from "@/data/mock-feed";

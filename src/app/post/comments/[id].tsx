@@ -1,6 +1,7 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState, useEffect, useCallback, useRef } from "react";
-import { View, Text, Image, TouchableOpacity, FlatList, KeyboardAvoidingView, Platform } from "react-native";
+import { View, Text, TouchableOpacity, FlatList, KeyboardAvoidingView, Platform } from "react-native";
+import { Image } from 'expo-image';
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { CommentInput, CommentInputHandle } from "@/components/feed/comment-input";
