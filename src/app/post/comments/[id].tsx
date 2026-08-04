@@ -13,6 +13,9 @@ import { MOCK_FEED, FeedPost, FeedComment } from "@/data/mock-feed";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { formatRelativeTime } from "@/utils/feed-utils";
 import { buildMentionSuggestions } from "@/utils/mention-utils";
+import { resized } from "@/utils/image-sizing";
+
+const AVATAR_SIZE = 36;
 
 interface ReplyInfo {
   commentId: string;
@@ -130,7 +133,7 @@ export default function CommentsScreen() {
           }}
         >
           <TouchableOpacity onPress={() => router.push(`/profile/${post.user.username}`)}>
-            <Image source={{ uri: post.user.avatar }} style={{ width: 36, height: 36, borderRadius: 18 }} />
+            <Image source={resized(post.user.avatar, AVATAR_SIZE)} style={{ width: AVATAR_SIZE, height: AVATAR_SIZE, borderRadius: AVATAR_SIZE / 2 }} />
           </TouchableOpacity>
           <View style={{ flex: 1 }}>
             <Text style={{ fontSize: 14, color: colors.text, lineHeight: 20 }}>

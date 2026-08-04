@@ -7,6 +7,9 @@ import { HeartIcon } from "@/components/feed/icons/heart-icon";
 import { ImageWithShimmer } from "@/components/feed/shimmer/image-with-shimmer";
 import { FeedComment } from "@/data/mock-feed";
 import { formatRelativeTime } from "@/utils/feed-utils";
+import { resized } from "@/utils/image-sizing";
+
+const AVATAR_SIZE = 28;
 
 export const CommentPreview = ({ comment, postId }: { comment: FeedComment; postId: string }) => {
   const colors = useContext(ColorsContext);
@@ -31,7 +34,7 @@ export const CommentPreview = ({ comment, postId }: { comment: FeedComment; post
   return (
     <View style={styles.container}>
       <TouchableOpacity onPress={openProfile}>
-        <ImageWithShimmer source={{ uri: comment.avatar }} style={[styles.avatar, styles.avatarClip]} />
+        <ImageWithShimmer source={resized(comment.avatar, AVATAR_SIZE)} style={[styles.avatar, styles.avatarClip]} />
       </TouchableOpacity>
       <View style={styles.body}>
         <Text style={{ fontSize: 13, color: colors.text, lineHeight: 18 }}>
@@ -74,8 +77,8 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   avatar: {
-    width: 28,
-    height: 28,
+    width: AVATAR_SIZE,
+    height: AVATAR_SIZE,
   },
   body: {
     flex: 1,

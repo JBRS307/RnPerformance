@@ -8,9 +8,11 @@ import { IconSymbol } from "@/components/ui/icon-symbol";
 import { Colors } from "@/constants/theme";
 import { MOCK_FEED, FeedPost } from "@/data/mock-feed";
 import { useColorScheme } from "@/hooks/use-color-scheme";
+import { resized } from "@/utils/image-sizing";
 
 const { width } = Dimensions.get("window");
 const imageSize = (width - 4) / 3;
+const AVATAR_SIZE = 86;
 
 interface UserProfile {
   username: string;
@@ -205,11 +207,11 @@ export default function UserProfileScreen() {
             }}
           >
             <Image
-              source={{ uri: profile.avatar }}
+              source={resized(profile.avatar, AVATAR_SIZE)}
               style={{
-                width: 86,
-                height: 86,
-                borderRadius: 43,
+                width: AVATAR_SIZE,
+                height: AVATAR_SIZE,
+                borderRadius: AVATAR_SIZE / 2,
                 borderWidth: 3,
                 borderColor: "#271c2d"
               }}

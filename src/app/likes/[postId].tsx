@@ -8,6 +8,9 @@ import { IconSymbol } from "@/components/ui/icon-symbol";
 import { Colors } from "@/constants/theme";
 import { MOCK_FEED, FeedPost } from "@/data/mock-feed";
 import { useColorScheme } from "@/hooks/use-color-scheme";
+import { resized } from "@/utils/image-sizing";
+
+const AVATAR_SIZE = 50;
 
 interface LikeUser {
   username: string;
@@ -113,11 +116,11 @@ function UserRow({ user, colors, onPress }: { user: LikeUser; colors: typeof Col
     >
       <TouchableOpacity onPress={onPress}>
         <Image
-          source={{ uri: user.avatar }}
+          source={resized(user.avatar, AVATAR_SIZE)}
           style={{
-            width: 50,
-            height: 50,
-            borderRadius: 25,
+            width: AVATAR_SIZE,
+            height: AVATAR_SIZE,
+            borderRadius: AVATAR_SIZE / 2,
             borderWidth: 2,
             borderColor: colors.border
           }}

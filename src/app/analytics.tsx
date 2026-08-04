@@ -10,6 +10,9 @@ import { SkiaRenderer } from "@/components/analytics/renderers";
 import { Colors } from "@/constants/theme";
 import { MOCK_FEED } from "@/data/mock-feed";
 import { useColorScheme } from "@/hooks/use-color-scheme";
+import { resized } from "@/utils/image-sizing";
+
+const AVATAR_SIZE = 44;
 
 // Unique users from the feed
 const USERS = (() => {
@@ -114,11 +117,11 @@ export default function AnalyticsScreen() {
                 }}
               >
                 <Image
-                  source={{ uri: post.user.avatar }}
+                  source={resized(post.user.avatar, AVATAR_SIZE)}
                   style={{
-                    width: 44,
-                    height: 44,
-                    borderRadius: 22,
+                    width: AVATAR_SIZE,
+                    height: AVATAR_SIZE,
+                    borderRadius: AVATAR_SIZE / 2,
                     borderWidth: 2,
                     borderColor: active ? colors.tint : "transparent"
                   }}

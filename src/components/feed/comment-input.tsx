@@ -5,7 +5,11 @@ import { Image } from 'expo-image';
 import { Colors } from "@/constants/theme";
 import { FeedComment } from "@/data/mock-feed";
 import { buildMentionSuggestions } from "@/utils/mention-utils";
+import { resized } from "@/utils/image-sizing";
 import { IconSymbol } from "../ui/icon-symbol";
+
+const AVATAR_SIZE = 32;
+const CURRENT_USER_AVATAR = "https://i.pravatar.cc/150?img=68";
 
 function MentionSuggestions({
   suggestions,
@@ -182,8 +186,8 @@ const CommentInput = forwardRef<CommentInputHandle, CommentInputProps>(function 
         }}
       >
         <Image
-          source={{ uri: "https://i.pravatar.cc/150?img=68" }}
-          style={{ width: 32, height: 32, borderRadius: 16 }}
+          source={resized(CURRENT_USER_AVATAR, AVATAR_SIZE)}
+          style={{ width: AVATAR_SIZE, height: AVATAR_SIZE, borderRadius: AVATAR_SIZE / 2 }}
         />
 
         <TextInput

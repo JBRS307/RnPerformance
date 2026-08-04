@@ -30,7 +30,7 @@ export const SuggestedPostCard = ({ post }: { post: SuggestedPost }) => {
       </TouchableOpacity>
       <View style={styles.info}>
         <TouchableOpacity onPress={openProfile} style={styles.userRow}>
-          <ImageWithShimmer source={{ uri: post.avatar }} style={styles.avatar} />
+          <ImageWithShimmer source={resized(post.avatar, AVATAR_SIZE)} style={styles.avatar} />
           <Text numberOfLines={1} style={[styles.username, { color: colors.text }]}>
             {post.username}
           </Text>
@@ -60,15 +60,15 @@ export const SuggestedPostCard = ({ post }: { post: SuggestedPost }) => {
 
 const styles = StyleSheet.create({
   card: {
-    width: 160,
+    width: CARD_WIDTH,
     marginRight: 8,
     borderRadius: 8,
     borderWidth: 0.5,
     overflow: "hidden",
   },
   image: {
-    width: 160,
-    height: 160,
+    width: CARD_WIDTH,
+    height: CARD_WIDTH,
   },
   info: {
     padding: 8,
@@ -79,9 +79,9 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   avatar: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
+    width: AVATAR_SIZE,
+    height: AVATAR_SIZE,
+    borderRadius: AVATAR_SIZE / 2,
   },
   username: {
     fontSize: 12,
