@@ -1,12 +1,11 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import {
   View,
   Text,
   Image,
   TouchableOpacity,
   FlatList,
-  TextInput,
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
@@ -21,7 +20,7 @@ import { useColorScheme } from "@/hooks/use-color-scheme";
 import { buildMentionSuggestions } from "@/utils/mention-utils";
 import { detectSpam } from "@/utils/spam-detection";
 
-import { CommentInput } from "@/components/feed/comment-input";
+import { CommentInput, CommentInputHandle } from "@/components/feed/comment-input";
 import { CommentItem } from "@/components/feed/comments/comment-item";
 import { findRelatedPosts } from "@/utils/related-posts";
 
@@ -34,11 +33,10 @@ const PostDetailScreen = () => {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const inputRef = useRef<TextInput>(null);
+  const inputRef = useRef<CommentInputHandle>(null);
   const prevCommentsLengthRef = useRef(0);
   const [post, setPost] = useState<FeedPost | null>(null);
   const [comments, setComments] = useState<FeedComment[]>([]);
-  const [newComment, setNewComment] = useState("");
   const [replyInfo, setReplyInfo] = useState<ReplyInfo | null>(null);
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? "light"];
@@ -54,20 +52,20 @@ const PostDetailScreen = () => {
   const hasNewComments = comments.length > prevCommentsLengthRef.current;
   prevCommentsLengthRef.current = comments.length;
 
-  const relatedPosts = post ? findRelatedPosts(post) : [];
+  const relatedPosts = useMemo(() => post ? findRelatedPosts(post) : [], [post]);
 
   const handleReply = useCallback((commentId: string, username: string) => {
     setReplyInfo({ commentId, username });
-    setNewComment(`@${username} `);
+    inputRef.current?.setText(`@${username} `);
     inputRef.current?.focus();
   }, []);
 
-  const handleAddComment = useCallback(() => {
-    if (!newComment.trim() || !post) return;
+  const handleAddComment = useCallback((text: string) => {
+    if (!text.trim() || !post) return;
 
     const commentText = replyInfo
-      ? newComment.replace(`@${replyInfo.username} `, "")
-      : newComment;
+      ? text.replace(`@${replyInfo.username} `, "")
+      : text;
 
     // Run spam detection — blocks the JS thread
     const { isSpam, maxSimilarity } = detectSpam(commentText, comments);
@@ -114,13 +112,13 @@ const PostDetailScreen = () => {
       setComments((prev) => [newCommentObj, ...prev]);
     }
 
-    setNewComment("");
+    inputRef.current?.clear();
     setReplyInfo(null);
-  }, [newComment, post, replyInfo, comments]);
+  }, [post, replyInfo, comments]);
 
   const cancelReply = useCallback(() => {
     setReplyInfo(null);
-    setNewComment("");
+    inputRef.current?.clear();
   }, []);
 
   if (!post) {
@@ -305,8 +303,6 @@ const PostDetailScreen = () => {
         {/* Comment Input */}
         <CommentInput
           ref={inputRef}
-          value={newComment}
-          onChangeText={setNewComment}
           onSubmit={handleAddComment}
           placeholder={
             replyInfo

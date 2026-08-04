@@ -1,4 +1,4 @@
-import { forwardRef, useCallback, useMemo } from "react";
+import { forwardRef, useCallback, useImperativeHandle, useMemo, useRef, useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, ScrollView, Image } from "react-native";
 
 import { Colors } from "@/constants/theme";
@@ -61,9 +61,7 @@ function MentionSuggestions({
 }
 
 interface CommentInputProps {
-  value: string;
-  onChangeText: (text: string) => void;
-  onSubmit: () => void;
+  onSubmit: (text: string) => void;
   placeholder: string;
   colors: typeof Colors.light;
   comments: FeedComment[];
@@ -71,14 +69,29 @@ interface CommentInputProps {
   showTopBorder: boolean;
 }
 
+export interface CommentInputHandle {
+  focus: () => void;
+  setText: (text: string) => void;
+  clear: () => void;
+}
+
 /**
  * A comment input with a horizontal mention-suggestion bar that appears
  * when the user is typing an @mention.
  */
-const CommentInput = forwardRef<TextInput, CommentInputProps>(function CommentInput(
-  { value, onChangeText, onSubmit, placeholder, colors, comments, bottomInset, showTopBorder },
+const CommentInput = forwardRef<CommentInputHandle, CommentInputProps>(function CommentInput(
+  { onSubmit, placeholder, colors, comments, bottomInset, showTopBorder },
   ref
 ) {
+  const [value, setValue] = useState('');
+  const inputRef = useRef<TextInput>(null);
+
+  useImperativeHandle(ref, () => ({
+    focus: () => inputRef.current?.focus(),
+    setText: setValue,
+    clear: () => setValue(''),
+  }), []);
+
   const isTypingMention = value.match(/@(\w*)$/) !== null;
 
   const mentionSuggestions = useMemo(() => buildMentionSuggestions(comments, value), [comments, value]);
@@ -87,11 +100,13 @@ const CommentInput = forwardRef<TextInput, CommentInputProps>(function CommentIn
 
   const handleSelectMention = useCallback(
     (username: string) => {
-      const atIndex = value.lastIndexOf("@");
-      const before = value.slice(0, atIndex);
-      onChangeText(`${before}@${username} `);
+      setValue(prev => {
+        const atIndex = prev.lastIndexOf('@');
+        if (atIndex === -1) return `${prev}@${username} `;
+        return `${prev.slice(0, atIndex)}@${username} `;
+      });
     },
-    [value, onChangeText]
+    []
   );
 
   return (
@@ -120,7 +135,7 @@ const CommentInput = forwardRef<TextInput, CommentInputProps>(function CommentIn
         />
 
         <TextInput
-          ref={ref}
+          ref={inputRef}
           style={{
             flex: 1,
             marginHorizontal: 12,
@@ -134,12 +149,12 @@ const CommentInput = forwardRef<TextInput, CommentInputProps>(function CommentIn
           placeholder={placeholder}
           placeholderTextColor={colors.icon}
           value={value}
-          onChangeText={onChangeText}
+          onChangeText={setValue}
           multiline
           maxLength={500}
         />
 
-        <TouchableOpacity onPress={onSubmit} disabled={!value.trim()}>
+        <TouchableOpacity onPress={() => onSubmit(value)} disabled={!value.trim()}>
           <Text
             style={{
               color: value.trim() ? "#271c2d" : colors.icon,
