@@ -51,7 +51,7 @@ const PostDetailScreen = () => {
   const hasNewComments = comments.length > prevCommentsLengthRef.current;
   prevCommentsLengthRef.current = comments.length;
 
-  const relatedPosts = useMemo(() => post ? findRelatedPosts(post) : [], [post]);
+  const relatedPosts = post ? findRelatedPosts(post) : [];
 
   const handleReply = useCallback((commentId: string, username: string) => {
     commentInputRef.current?.setReplyInfo({ commentId, username });
