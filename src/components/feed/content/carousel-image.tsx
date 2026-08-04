@@ -1,14 +1,14 @@
 import { View, StyleSheet } from "react-native";
+import { Image } from 'expo-image';
 
 import { FeedImage } from "@/data/mock-feed";
-import { ImageWithShimmer } from "@/components/feed/shimmer/image-with-shimmer";
 import { resized } from "@/utils/image-sizing";
 
 const IMAGE_WIDTH = 400;
 
 export const CarouselImage = ({ image }: { image: FeedImage }) => (
   <View>
-    <ImageWithShimmer
+    <Image
       source={resized(image.uri, IMAGE_WIDTH)}
       style={{ width: IMAGE_WIDTH, aspectRatio: image.aspectRatio }}
     />

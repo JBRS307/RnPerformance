@@ -1,10 +1,10 @@
 import { useState, useEffect, useContext } from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { Image } from 'expo-image';
 import { useRouter } from "expo-router";
 
 import { ColorsContext } from "@/context/colors-context";
 import { HeartIcon } from "@/components/feed/icons/heart-icon";
-import { ImageWithShimmer } from "@/components/feed/shimmer/image-with-shimmer";
 import { FeedComment } from "@/data/mock-feed";
 import { formatRelativeTime } from "@/utils/feed-utils";
 import { resized } from "@/utils/image-sizing";
@@ -34,7 +34,7 @@ export const CommentPreview = ({ comment, postId }: { comment: FeedComment; post
   return (
     <View style={styles.container}>
       <TouchableOpacity onPress={openProfile}>
-        <ImageWithShimmer source={resized(comment.avatar, AVATAR_SIZE)} style={[styles.avatar, styles.avatarClip]} />
+        <Image source={resized(comment.avatar, AVATAR_SIZE)} style={[styles.avatar, styles.avatarClip]} />
       </TouchableOpacity>
       <View style={styles.body}>
         <Text style={{ fontSize: 13, color: colors.text, lineHeight: 18 }}>

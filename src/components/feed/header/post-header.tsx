@@ -1,10 +1,10 @@
 import { useContext, useState } from "react";
 import { View, Text, TouchableOpacity, GestureResponderEvent, StyleSheet } from "react-native";
+import { Image } from 'expo-image';
 import { useRouter } from "expo-router";
 
 import { ColorsContext } from "@/context/colors-context";
 import { VerifiedIcon } from "@/components/feed/icons/verified-icon";
-import { ImageWithShimmer } from "@/components/feed/shimmer/image-with-shimmer";
 import { resized } from "@/utils/image-sizing";
 import { PostOptionsMenu } from "./post-options-menu";
 
@@ -48,7 +48,7 @@ export const PostHeader = ({
           onPress={() => router.push(`/profile/${username}`)}
         >
           <View style={styles.avatarClip}>
-            <ImageWithShimmer source={resized(avatar, AVATAR_SIZE)} style={styles.avatar} />
+            <Image source={resized(avatar, AVATAR_SIZE)} style={styles.avatar} />
             <View style={styles.avatarOverlay} />
           </View>
 
