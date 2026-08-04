@@ -1,5 +1,5 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import { useState, useEffect, useCallback, useRef, useTransition, useMemo } from "react";
 import {
   View,
   Text,
@@ -30,28 +30,31 @@ interface ReplyInfo {
 }
 
 const PostDetailScreen = () => {
+  const [isPending, startTransition] = useTransition();
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const commentInputRef = useRef<CommentInputHandle>(null);
   const prevCommentsLengthRef = useRef(0);
   const [post, setPost] = useState<FeedPost | null>(null);
+  const [deferredPost, setDeferredPost] = useState<FeedPost | null>(null);
   const [comments, setComments] = useState<FeedComment[]>([]);
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? "light"];
 
   useEffect(() => {
     const foundPost = findPostForDetails(id);
-    if (foundPost) {
-      setPost(foundPost);
-      setComments(foundPost.comments);
-    }
+    if (!foundPost) return;
+
+    setPost(foundPost);
+    setComments(foundPost.comments);
+    startTransition(() => setDeferredPost(foundPost));
   }, [id]);
+
+  const relatedPosts = useMemo(() => (deferredPost ? findRelatedPosts(deferredPost) : []), [deferredPost]);
 
   const hasNewComments = comments.length > prevCommentsLengthRef.current;
   prevCommentsLengthRef.current = comments.length;
-
-  const relatedPosts = useMemo(() => post ? findRelatedPosts(post) : [], [post]);
 
   const handleReply = useCallback((commentId: string, username: string) => {
     commentInputRef.current?.setReplyInfo({ commentId, username });
@@ -62,7 +65,7 @@ const PostDetailScreen = () => {
   const handleAddComment = useCallback((text: string, replyInfo?: ReplyInfo) => {
     if (!text.trim() || !post) return;
 
-    const commentText = replyInfo != undefined
+    const commentText = replyInfo
       ? text.replace(`@${replyInfo.username} `, "")
       : text;
 
@@ -94,7 +97,7 @@ const PostDetailScreen = () => {
       replies: [],
     };
 
-    if (replyInfo != undefined) {
+    if (replyInfo) {
       // Add as reply to existing comment
       setComments((prev) =>
         prev.map((comment) => {
@@ -199,7 +202,7 @@ const PostDetailScreen = () => {
             </View>
           }
           ListFooterComponent={
-            relatedPosts.length > 0 ? (
+            !isPending ? (
               <View
                 style={{
                   paddingTop: 16,
