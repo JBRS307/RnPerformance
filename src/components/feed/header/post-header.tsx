@@ -7,6 +7,7 @@ import { ColorsContext } from "@/context/colors-context";
 import { VerifiedIcon } from "@/components/feed/icons/verified-icon";
 import { resized } from "@/utils/image-sizing";
 import { PostOptionsMenu } from "./post-options-menu";
+import { DEFAULT_BLURHASH } from "@/constants/theme";
 
 const AVATAR_SIZE = 32;
 
@@ -48,7 +49,7 @@ export const PostHeader = ({
           onPress={() => router.push(`/profile/${username}`)}
         >
           <View style={styles.avatarClip}>
-            <Image source={resized(avatar, AVATAR_SIZE)} style={styles.avatar} />
+            <Image source={resized(avatar, AVATAR_SIZE)} style={styles.avatar} placeholder={{ blurhash: DEFAULT_BLURHASH }} />
             <View style={styles.avatarOverlay} />
           </View>
 

@@ -18,6 +18,8 @@ const bgOffWhite = "#fdfcfc"; // Off-white (card backgrounds)
 const bgDark = "#271c2d"; // Dark purple-brown
 const bgLightPurple = "#efecf3"; // Light purple-gray
 
+export const DEFAULT_BLURHASH = "L6PZfSi_.AyE_3t7t7R**0o#DgR4";
+
 export const Colors = {
   light: {
     text: "#271c2d",

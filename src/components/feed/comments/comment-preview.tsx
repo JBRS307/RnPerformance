@@ -8,6 +8,7 @@ import { HeartIcon } from "@/components/feed/icons/heart-icon";
 import { FeedComment } from "@/data/mock-feed";
 import { formatRelativeTime } from "@/utils/feed-utils";
 import { resized } from "@/utils/image-sizing";
+import { DEFAULT_BLURHASH } from "@/constants/theme";
 
 const AVATAR_SIZE = 28;
 
@@ -34,7 +35,7 @@ export const CommentPreview = ({ comment, postId }: { comment: FeedComment; post
   return (
     <View style={styles.container}>
       <TouchableOpacity onPress={openProfile}>
-        <Image source={resized(comment.avatar, AVATAR_SIZE)} style={[styles.avatar, styles.avatarClip]} />
+        <Image source={resized(comment.avatar, AVATAR_SIZE)} style={[styles.avatar, styles.avatarClip]} placeholder={{ blurhash: DEFAULT_BLURHASH }} />
       </TouchableOpacity>
       <View style={styles.body}>
         <Text style={{ fontSize: 13, color: colors.text, lineHeight: 18 }}>

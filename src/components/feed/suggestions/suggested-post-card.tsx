@@ -6,6 +6,7 @@ import { useRouter } from "expo-router";
 import { ColorsContext } from "@/context/colors-context";
 import { SuggestedPost } from "@/data/mock-feed";
 import { resized } from "@/utils/image-sizing";
+import { DEFAULT_BLURHASH } from "@/constants/theme";
 
 const CARD_WIDTH = 160;
 const AVATAR_SIZE = 20;
@@ -26,11 +27,11 @@ export const SuggestedPostCard = ({ post }: { post: SuggestedPost }) => {
   return (
     <View style={[styles.card, { borderColor: colors.border, backgroundColor: colors.cardBackground }]}>
       <TouchableOpacity onPress={openPost}>
-        <Image source={resized(post.image, CARD_WIDTH)} style={styles.image} resizeMode="cover" />
+        <Image source={resized(post.image, CARD_WIDTH)} style={styles.image} resizeMode="cover" placeholder={{ blurhash: DEFAULT_BLURHASH }} />
       </TouchableOpacity>
       <View style={styles.info}>
         <TouchableOpacity onPress={openProfile} style={styles.userRow}>
-          <Image source={resized(post.avatar, AVATAR_SIZE)} style={styles.avatar} />
+          <Image source={resized(post.avatar, AVATAR_SIZE)} style={styles.avatar} placeholder={{ blurhash: DEFAULT_BLURHASH }} />
           <Text numberOfLines={1} style={[styles.username, { color: colors.text }]}>
             {post.username}
           </Text>
