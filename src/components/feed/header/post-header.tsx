@@ -4,10 +4,10 @@ import { Image } from 'expo-image';
 import { useRouter } from "expo-router";
 
 import { ColorsContext } from "@/context/colors-context";
-import { VerifiedIcon } from "@/components/feed/icons/verified-icon";
 import { resized } from "@/utils/image-sizing";
 import { PostOptionsMenu } from "./post-options-menu";
 import { DEFAULT_BLURHASH } from "@/constants/theme";
+import { IconSymbol } from "@/components/ui/icon-symbol";
 
 const AVATAR_SIZE = 32;
 
@@ -57,7 +57,7 @@ export const PostHeader = ({
             <View style={styles.nameRow}>
               <Text style={{ fontWeight: "600", fontSize: 14, color: colors.text }}>{username}</Text>
               {isVerified && (
-                <VerifiedIcon size={14} color="#3d2847" />
+                <IconSymbol name='checkmark.seal.fill' size={14} color="#3d2847" />
               )}
             </View>
             <TouchableOpacity onPress={openLocation}>

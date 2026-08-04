@@ -4,11 +4,11 @@ import { Image } from 'expo-image';
 import { useRouter } from "expo-router";
 
 import { ColorsContext } from "@/context/colors-context";
-import { HeartIcon } from "@/components/feed/icons/heart-icon";
 import { FeedComment } from "@/data/mock-feed";
 import { formatRelativeTime } from "@/utils/feed-utils";
 import { resized } from "@/utils/image-sizing";
 import { DEFAULT_BLURHASH } from "@/constants/theme";
+import { IconSymbol } from "@/components/ui/icon-symbol.ios";
 
 const AVATAR_SIZE = 28;
 
@@ -59,7 +59,7 @@ export const CommentPreview = ({ comment, postId }: { comment: FeedComment; post
         }}
         style={styles.heartButton}
       >
-        <HeartIcon size={12} color={isLiked ? "#FF6B6B" : colors.icon} filled={isLiked} />
+        <IconSymbol name={isLiked ? 'heart.fill' : 'heart'} size={12} color={isLiked ? "#FF6B6B" : colors.icon} />
       </TouchableOpacity>
     </View>
   );
