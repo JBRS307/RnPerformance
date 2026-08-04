@@ -62,7 +62,7 @@ const PostDetailScreen = () => {
   const handleAddComment = useCallback((text: string, replyInfo?: ReplyInfo) => {
     if (!text.trim() || !post) return;
 
-    const commentText = replyInfo != undefined
+    const commentText = replyInfo !== undefined
       ? text.replace(`@${replyInfo.username} `, "")
       : text;
 
@@ -94,7 +94,7 @@ const PostDetailScreen = () => {
       replies: [],
     };
 
-    if (replyInfo != undefined) {
+    if (replyInfo !== undefined) {
       // Add as reply to existing comment
       setComments((prev) =>
         prev.map((comment) => {
