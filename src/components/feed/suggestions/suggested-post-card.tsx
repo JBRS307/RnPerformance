@@ -5,6 +5,10 @@ import { useRouter } from "expo-router";
 import { ColorsContext } from "@/context/colors-context";
 import { ImageWithShimmer } from "@/components/feed/shimmer/image-with-shimmer";
 import { SuggestedPost } from "@/data/mock-feed";
+import { resized } from "@/utils/image-sizing";
+
+const CARD_WIDTH = 160;
+const AVATAR_SIZE = 20;
 
 export const SuggestedPostCard = ({ post }: { post: SuggestedPost }) => {
   const colors = useContext(ColorsContext);
@@ -22,7 +26,7 @@ export const SuggestedPostCard = ({ post }: { post: SuggestedPost }) => {
   return (
     <View style={[styles.card, { borderColor: colors.border, backgroundColor: colors.cardBackground }]}>
       <TouchableOpacity onPress={openPost}>
-        <ImageWithShimmer source={{ uri: post.image }} style={styles.image} resizeMode="cover" />
+        <ImageWithShimmer source={resized(post.image, CARD_WIDTH)} style={styles.image} resizeMode="cover" />
       </TouchableOpacity>
       <View style={styles.info}>
         <TouchableOpacity onPress={openProfile} style={styles.userRow}>
