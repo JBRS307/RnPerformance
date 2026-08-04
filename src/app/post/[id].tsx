@@ -33,11 +33,10 @@ const PostDetailScreen = () => {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const inputRef = useRef<CommentInputHandle>(null);
+  const commentInputRef = useRef<CommentInputHandle>(null);
   const prevCommentsLengthRef = useRef(0);
   const [post, setPost] = useState<FeedPost | null>(null);
   const [comments, setComments] = useState<FeedComment[]>([]);
-  const [replyInfo, setReplyInfo] = useState<ReplyInfo | null>(null);
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? "light"];
 
@@ -55,15 +54,15 @@ const PostDetailScreen = () => {
   const relatedPosts = useMemo(() => post ? findRelatedPosts(post) : [], [post]);
 
   const handleReply = useCallback((commentId: string, username: string) => {
-    setReplyInfo({ commentId, username });
-    inputRef.current?.setText(`@${username} `);
-    inputRef.current?.focus();
+    commentInputRef.current?.setReplyInfo({ commentId, username });
+    commentInputRef.current?.setText(`@${username} `);
+    commentInputRef.current?.focus();
   }, []);
 
-  const handleAddComment = useCallback((text: string) => {
+  const handleAddComment = useCallback((text: string, replyInfo?: ReplyInfo) => {
     if (!text.trim() || !post) return;
 
-    const commentText = replyInfo
+    const commentText = replyInfo != undefined
       ? text.replace(`@${replyInfo.username} `, "")
       : text;
 
@@ -95,7 +94,7 @@ const PostDetailScreen = () => {
       replies: [],
     };
 
-    if (replyInfo) {
+    if (replyInfo != undefined) {
       // Add as reply to existing comment
       setComments((prev) =>
         prev.map((comment) => {
@@ -112,14 +111,8 @@ const PostDetailScreen = () => {
       setComments((prev) => [newCommentObj, ...prev]);
     }
 
-    inputRef.current?.clear();
-    setReplyInfo(null);
-  }, [post, replyInfo, comments]);
-
-  const cancelReply = useCallback(() => {
-    setReplyInfo(null);
-    inputRef.current?.clear();
-  }, []);
+    commentInputRef.current?.clear();
+  }, [post, comments]);
 
   if (!post) {
     return (
@@ -274,45 +267,13 @@ const PostDetailScreen = () => {
           }
         />
 
-        {/* Reply indicator */}
-        {replyInfo && (
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: "space-between",
-              paddingHorizontal: 16,
-              paddingVertical: 8,
-              backgroundColor: colors.icon + "15",
-              borderTopWidth: 0.5,
-              borderTopColor: colors.icon + "30",
-            }}
-          >
-            <Text style={{ fontSize: 13, color: colors.icon }}>
-              Replying to{" "}
-              <Text style={{ color: colors.text, fontWeight: "600" }}>
-                @{replyInfo.username}
-              </Text>
-            </Text>
-            <TouchableOpacity onPress={cancelReply}>
-              <IconSymbol name="xmark" size={18} color={colors.icon} />
-            </TouchableOpacity>
-          </View>
-        )}
-
         {/* Comment Input */}
         <CommentInput
-          ref={inputRef}
+          ref={commentInputRef}
           onSubmit={handleAddComment}
-          placeholder={
-            replyInfo
-              ? `Reply to @${replyInfo.username}...`
-              : "Add a comment..."
-          }
           colors={colors}
           comments={comments}
           bottomInset={insets.bottom}
-          showTopBorder={!replyInfo}
         />
       </KeyboardAvoidingView>
     </ColorsContext.Provider>

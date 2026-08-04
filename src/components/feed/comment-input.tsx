@@ -4,6 +4,7 @@ import { View, Text, TextInput, TouchableOpacity, ScrollView, Image } from "reac
 import { Colors } from "@/constants/theme";
 import { FeedComment } from "@/data/mock-feed";
 import { buildMentionSuggestions } from "@/utils/mention-utils";
+import { IconSymbol } from "../ui/icon-symbol";
 
 function MentionSuggestions({
   suggestions,
@@ -60,18 +61,55 @@ function MentionSuggestions({
   );
 }
 
+interface ReplyBannerProps {
+  colors: typeof Colors.light;
+  replyInfo: ReplyInfo;
+  cancelReply: () => void;
+}
+
+const ReplyBanner = ({ colors, replyInfo, cancelReply }: ReplyBannerProps) => {
+  return (
+    <View
+      style={{
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        backgroundColor: colors.icon + "15",
+        borderTopWidth: 0.5,
+        borderTopColor: colors.icon + "30",
+      }}
+    >
+      <Text style={{ fontSize: 13, color: colors.icon }}>
+        Replying to{" "}
+        <Text style={{ color: colors.text, fontWeight: "600" }}>
+          @{replyInfo.username}
+        </Text>
+      </Text>
+      <TouchableOpacity onPress={cancelReply}>
+        <IconSymbol name="xmark" size={18} color={colors.icon} />
+      </TouchableOpacity>
+    </View>
+  );
+}
+
 interface CommentInputProps {
-  onSubmit: (text: string) => void;
-  placeholder: string;
+  onSubmit: (text: string, replyInfo?: ReplyInfo) => void;
   colors: typeof Colors.light;
   comments: FeedComment[];
   bottomInset: number;
-  showTopBorder: boolean;
 }
 
-export interface CommentInputHandle {
+interface ReplyInfo {
+  commentId: string;
+  username: string;
+}
+
+interface CommentInputHandle {
   focus: () => void;
   setText: (text: string) => void;
+  setReplyInfo: (replyInfo: ReplyInfo) => void;
   clear: () => void;
 }
 
@@ -80,16 +118,21 @@ export interface CommentInputHandle {
  * when the user is typing an @mention.
  */
 const CommentInput = forwardRef<CommentInputHandle, CommentInputProps>(function CommentInput(
-  { onSubmit, placeholder, colors, comments, bottomInset, showTopBorder },
+  { onSubmit, colors, comments, bottomInset },
   ref
 ) {
   const [value, setValue] = useState('');
+  const [replyInfo, setReplyInfo] = useState<ReplyInfo | null>(null);
   const inputRef = useRef<TextInput>(null);
 
   useImperativeHandle(ref, () => ({
     focus: () => inputRef.current?.focus(),
     setText: setValue,
-    clear: () => setValue(''),
+    setReplyInfo: setReplyInfo,
+    clear: () => {
+      setValue('');
+      setReplyInfo(null);
+    }
   }), []);
 
   const isTypingMention = value.match(/@(\w*)$/) !== null;
@@ -109,8 +152,16 @@ const CommentInput = forwardRef<CommentInputHandle, CommentInputProps>(function 
     []
   );
 
+  const cancelReply = () => {
+    setReplyInfo(null);
+    setValue('');
+  };
+
+  const showTopBorder = replyInfo === null;
+
   return (
     <View>
+      {replyInfo && <ReplyBanner colors={colors} replyInfo={replyInfo} cancelReply={cancelReply} />}
       {/* Mention suggestions bar — each chip is artificially heavy */}
       {showSuggestions && (
         <MentionSuggestions suggestions={mentionSuggestions} colors={colors} onSelect={handleSelectMention} />
@@ -146,7 +197,11 @@ const CommentInput = forwardRef<CommentInputHandle, CommentInputProps>(function 
             color: colors.text,
             fontSize: 14
           }}
-          placeholder={placeholder}
+          placeholder={
+            replyInfo
+              ? `Reply to @${replyInfo.username}`
+              : "Add a comment..."
+          }
           placeholderTextColor={colors.icon}
           value={value}
           onChangeText={setValue}
@@ -154,7 +209,7 @@ const CommentInput = forwardRef<CommentInputHandle, CommentInputProps>(function 
           maxLength={500}
         />
 
-        <TouchableOpacity onPress={() => onSubmit(value)} disabled={!value.trim()}>
+        <TouchableOpacity onPress={() => onSubmit(value, replyInfo ?? undefined)} disabled={!value.trim()}>
           <Text
             style={{
               color: value.trim() ? "#271c2d" : colors.icon,
@@ -170,4 +225,4 @@ const CommentInput = forwardRef<CommentInputHandle, CommentInputProps>(function 
   );
 });
 
-export { CommentInput };
+export { CommentInput, CommentInputHandle };
