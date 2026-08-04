@@ -1,6 +1,7 @@
 import { useCallback, useContext, useState } from "react";
 import { useRouter } from "expo-router";
-import { GestureResponderEvent, Image, Text, TouchableOpacity, View } from "react-native";
+import { GestureResponderEvent, Text, TouchableOpacity, View } from "react-native";
+import { Image } from 'expo-image';
 
 import { BookmarkButton } from "@/components/feed/actions/bookmark-button";
 import { LikeButton } from "@/components/feed/actions/like-button";
