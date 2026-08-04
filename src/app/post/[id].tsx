@@ -172,7 +172,6 @@ const PostDetailScreen = () => {
         {/* Post Content and Comments List */}
         <FlatList
           data={comments}
-          extraData={[post.isLiked, post.likes, post.shares.length]}
           ListHeaderComponent={
             <PostDetailHeader
               post={post}
