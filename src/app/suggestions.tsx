@@ -1,12 +1,16 @@
 import { useRouter } from "expo-router";
 import { useState } from "react";
-import { View, Text, Image, TouchableOpacity, FlatList } from "react-native";
+import { View, Text, TouchableOpacity, FlatList } from "react-native";
+import { Image } from 'expo-image';
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { Colors } from "@/constants/theme";
 import { MOCK_FEED } from "@/data/mock-feed";
 import { useColorScheme } from "@/hooks/use-color-scheme";
+import { resized } from "@/utils/image-sizing";
+
+const AVATAR_SIZE = 60;
 
 interface SuggestedUser {
   username: string;
@@ -136,11 +140,11 @@ function SuggestedUserCard({
         {/* Avatar */}
         <TouchableOpacity onPress={onProfilePress}>
           <Image
-            source={{ uri: user.avatar }}
+            source={resized(user.avatar, AVATAR_SIZE)}
             style={{
-              width: 60,
-              height: 60,
-              borderRadius: 30,
+              width: AVATAR_SIZE,
+              height: AVATAR_SIZE,
+              borderRadius: AVATAR_SIZE / 2,
               borderWidth: 3,
               borderColor: colors.cardBackground,
               marginTop: user.latestPostImage ? -40 : 0

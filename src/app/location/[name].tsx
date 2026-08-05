@@ -1,6 +1,7 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState, useEffect } from "react";
-import { View, Text, Image, TouchableOpacity, FlatList, Dimensions, Linking, Alert } from "react-native";
+import { View, Text, TouchableOpacity, FlatList, Dimensions, Linking, Alert } from "react-native";
+import { Image } from 'expo-image';
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { IconSymbol } from "@/components/ui/icon-symbol";

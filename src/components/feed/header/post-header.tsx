@@ -1,11 +1,15 @@
 import { useContext, useState } from "react";
 import { View, Text, TouchableOpacity, GestureResponderEvent, StyleSheet } from "react-native";
+import { Image } from 'expo-image';
 import { useRouter } from "expo-router";
 
 import { ColorsContext } from "@/context/colors-context";
-import { VerifiedIcon } from "@/components/feed/icons/verified-icon";
-import { ImageWithShimmer } from "@/components/feed/shimmer/image-with-shimmer";
+import { resized } from "@/utils/image-sizing";
 import { PostOptionsMenu } from "./post-options-menu";
+import { DEFAULT_BLURHASH } from "@/constants/theme";
+import { IconSymbol } from "@/components/ui/icon-symbol";
+
+const AVATAR_SIZE = 32;
 
 export const PostHeader = ({
   postId,
@@ -45,7 +49,7 @@ export const PostHeader = ({
           onPress={() => router.push(`/profile/${username}`)}
         >
           <View style={styles.avatarClip}>
-            <ImageWithShimmer source={{ uri: avatar }} style={styles.avatar} />
+            <Image source={resized(avatar, AVATAR_SIZE)} style={styles.avatar} placeholder={{ blurhash: DEFAULT_BLURHASH }} />
             <View style={styles.avatarOverlay} />
           </View>
 
@@ -53,7 +57,7 @@ export const PostHeader = ({
             <View style={styles.nameRow}>
               <Text style={{ fontWeight: "600", fontSize: 14, color: colors.text }}>{username}</Text>
               {isVerified && (
-                <VerifiedIcon size={14} color="#3d2847" />
+                <IconSymbol name='checkmark.seal.fill' size={14} color="#3d2847" />
               )}
             </View>
             <TouchableOpacity onPress={openLocation}>
@@ -102,8 +106,8 @@ const styles = StyleSheet.create({
     borderColor: "#271c2d",
   },
   avatar: {
-    width: 32,
-    height: 32,
+    width: AVATAR_SIZE,
+    height: AVATAR_SIZE,
   },
   avatarOverlay: {
     position: "absolute",

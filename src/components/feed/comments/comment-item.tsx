@@ -1,12 +1,17 @@
 import { useState } from "react";
-import { View, Text, Image, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity } from "react-native";
+import { Image } from 'expo-image';
 
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { Colors } from "@/constants/theme";
 import { FeedComment } from "@/data/mock-feed";
 import { formatRelativeTime } from "@/utils/feed-utils";
+import { resized } from "@/utils/image-sizing";
 
-export const CommentItem = ({ 
+const AVATAR_SIZE = 36;
+const REPLY_AVATAR_SIZE = 28;
+
+export const CommentItem = ({
   comment,
   colors,
   onReply,
@@ -25,6 +30,7 @@ export const CommentItem = ({
 
   const formattedTime = formatRelativeTime(comment.timestamp);
   const hasReplies = comment.replies && comment.replies.length > 0;
+  const avatarSize = isReply ? REPLY_AVATAR_SIZE : AVATAR_SIZE;
 
   return (
     <View>
@@ -40,11 +46,11 @@ export const CommentItem = ({
       >
         <TouchableOpacity onPress={() => onProfilePress(comment.username)}>
           <Image
-            source={{ uri: comment.avatar }}
+            source={resized(comment.avatar, avatarSize)}
             style={{
-              width: isReply ? 28 : 36,
-              height: isReply ? 28 : 36,
-              borderRadius: isReply ? 14 : 18
+              width: avatarSize,
+              height: avatarSize,
+              borderRadius: avatarSize / 2
             }}
           />
         </TouchableOpacity>

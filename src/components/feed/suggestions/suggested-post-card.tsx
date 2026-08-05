@@ -1,10 +1,15 @@
 import { useState, useContext } from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { Image } from 'expo-image';
 import { useRouter } from "expo-router";
 
 import { ColorsContext } from "@/context/colors-context";
-import { ImageWithShimmer } from "@/components/feed/shimmer/image-with-shimmer";
 import { SuggestedPost } from "@/data/mock-feed";
+import { resized } from "@/utils/image-sizing";
+import { DEFAULT_BLURHASH } from "@/constants/theme";
+
+const CARD_WIDTH = 160;
+const AVATAR_SIZE = 20;
 
 export const SuggestedPostCard = ({ post }: { post: SuggestedPost }) => {
   const colors = useContext(ColorsContext);
@@ -22,11 +27,11 @@ export const SuggestedPostCard = ({ post }: { post: SuggestedPost }) => {
   return (
     <View style={[styles.card, { borderColor: colors.border, backgroundColor: colors.cardBackground }]}>
       <TouchableOpacity onPress={openPost}>
-        <ImageWithShimmer source={{ uri: post.image }} style={styles.image} resizeMode="cover" />
+        <Image source={resized(post.image, CARD_WIDTH)} style={styles.image} resizeMode="cover" placeholder={{ blurhash: DEFAULT_BLURHASH }} />
       </TouchableOpacity>
       <View style={styles.info}>
         <TouchableOpacity onPress={openProfile} style={styles.userRow}>
-          <ImageWithShimmer source={{ uri: post.avatar }} style={styles.avatar} />
+          <Image source={resized(post.avatar, AVATAR_SIZE)} style={styles.avatar} placeholder={{ blurhash: DEFAULT_BLURHASH }} />
           <Text numberOfLines={1} style={[styles.username, { color: colors.text }]}>
             {post.username}
           </Text>
@@ -56,15 +61,15 @@ export const SuggestedPostCard = ({ post }: { post: SuggestedPost }) => {
 
 const styles = StyleSheet.create({
   card: {
-    width: 160,
+    width: CARD_WIDTH,
     marginRight: 8,
     borderRadius: 8,
     borderWidth: 0.5,
     overflow: "hidden",
   },
   image: {
-    width: 160,
-    height: 160,
+    width: CARD_WIDTH,
+    height: CARD_WIDTH,
   },
   info: {
     padding: 8,
@@ -75,9 +80,9 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   avatar: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
+    width: AVATAR_SIZE,
+    height: AVATAR_SIZE,
+    borderRadius: AVATAR_SIZE / 2,
   },
   username: {
     fontSize: 12,

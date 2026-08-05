@@ -3,12 +3,12 @@ import { useState, useEffect, useCallback, useRef, useMemo, useDeferredValue } f
 import {
   View,
   Text,
-  Image,
   TouchableOpacity,
   FlatList,
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
+import { Image } from 'expo-image';
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { PostDetailHeader } from "@/components/feed/post-detail-header";

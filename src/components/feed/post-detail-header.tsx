@@ -1,6 +1,7 @@
 import { useCallback, useContext, useState } from "react";
 import { useRouter } from "expo-router";
-import { GestureResponderEvent, Image, Text, TouchableOpacity, View } from "react-native";
+import { GestureResponderEvent, Text, TouchableOpacity, View } from "react-native";
+import { Image } from 'expo-image';
 
 import { BookmarkButton } from "@/components/feed/actions/bookmark-button";
 import { LikeButton } from "@/components/feed/actions/like-button";
@@ -11,6 +12,9 @@ import { IconSymbol } from "@/components/ui/icon-symbol";
 import { ColorsContext } from "@/context/colors-context";
 import { FeedPost } from "@/data/mock-feed";
 import { formatRelativeTime } from "@/utils/feed-utils";
+import { resized } from "@/utils/image-sizing";
+
+const AVATAR_SIZE = 36;
 
 interface PostDetailHeaderProps {
   post: FeedPost;
@@ -44,11 +48,11 @@ export const PostDetailHeader = ({
           onPress={() => router.push(`/profile/${post.user.username}`)}
         >
           <Image
-            source={{ uri: post.user.avatar }}
+            source={resized(post.user.avatar, AVATAR_SIZE)}
             style={{
-              width: 36,
-              height: 36,
-              borderRadius: 18,
+              width: AVATAR_SIZE,
+              height: AVATAR_SIZE,
+              borderRadius: AVATAR_SIZE / 2,
               borderWidth: 2,
               borderColor: "#271c2d"
             }}

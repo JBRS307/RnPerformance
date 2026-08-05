@@ -26,6 +26,7 @@ const MAPPING = {
   'paperplane': 'send',
   'bookmark': 'bookmark-border',
   'bookmark.fill': 'bookmark',
+  'checkmark.seal.fill': 'check-circle',
 } as IconMapping;
 
 /**

@@ -1,12 +1,16 @@
 import { useState, useEffect, useContext } from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { Image } from 'expo-image';
 import { useRouter } from "expo-router";
 
 import { ColorsContext } from "@/context/colors-context";
-import { HeartIcon } from "@/components/feed/icons/heart-icon";
-import { ImageWithShimmer } from "@/components/feed/shimmer/image-with-shimmer";
 import { FeedComment } from "@/data/mock-feed";
 import { formatRelativeTime } from "@/utils/feed-utils";
+import { resized } from "@/utils/image-sizing";
+import { DEFAULT_BLURHASH } from "@/constants/theme";
+import { IconSymbol } from "@/components/ui/icon-symbol.ios";
+
+const AVATAR_SIZE = 28;
 
 export const CommentPreview = ({ comment, postId }: { comment: FeedComment; postId: string }) => {
   const colors = useContext(ColorsContext);
@@ -31,7 +35,7 @@ export const CommentPreview = ({ comment, postId }: { comment: FeedComment; post
   return (
     <View style={styles.container}>
       <TouchableOpacity onPress={openProfile}>
-        <ImageWithShimmer source={{ uri: comment.avatar }} style={[styles.avatar, styles.avatarClip]} />
+        <Image source={resized(comment.avatar, AVATAR_SIZE)} style={[styles.avatar, styles.avatarClip]} placeholder={{ blurhash: DEFAULT_BLURHASH }} />
       </TouchableOpacity>
       <View style={styles.body}>
         <Text style={{ fontSize: 13, color: colors.text, lineHeight: 18 }}>
@@ -55,7 +59,7 @@ export const CommentPreview = ({ comment, postId }: { comment: FeedComment; post
         }}
         style={styles.heartButton}
       >
-        <HeartIcon size={12} color={isLiked ? "#FF6B6B" : colors.icon} filled={isLiked} />
+        <IconSymbol name={isLiked ? 'heart.fill' : 'heart'} size={12} color={isLiked ? "#FF6B6B" : colors.icon} />
       </TouchableOpacity>
     </View>
   );
@@ -74,8 +78,8 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   avatar: {
-    width: 28,
-    height: 28,
+    width: AVATAR_SIZE,
+    height: AVATAR_SIZE,
   },
   body: {
     flex: 1,
