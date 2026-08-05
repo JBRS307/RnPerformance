@@ -31,7 +31,7 @@ export const ImageCarousel = ({
         horizontal
         pagingEnabled
         showsHorizontalScrollIndicator={false}
-        onScroll={handleScroll}
+        onMomentumScrollEnd={handleScroll}
         scrollEventThrottle={16}
       >
         {images.map((image, i) => (
