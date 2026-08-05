@@ -1,4 +1,4 @@
-import { useContext, useState } from "react";
+import { useContext, useMemo, useState } from "react";
 import { View, TouchableOpacity, Share, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
 
@@ -22,13 +22,7 @@ export const ActionButtons = ({
   const colors = useContext(ColorsContext);
   const router = useRouter();
 
-  const likesText = (() => {
-    let text = "";
-    for (let i = 0; i < 100; i++) {
-      text = likes.toLocaleString();
-    }
-    return text + " likes";
-  })();
+  const likesText = useMemo(() => likes.toLocaleString() + ' likes', [likes]);
 
   const handleLike = () => {
     const prevIsLiked = isLiked;

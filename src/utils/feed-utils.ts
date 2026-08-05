@@ -22,16 +22,8 @@ export function computeEngagementRate(
 }
 
 export function formatTags(tags: string[]): string[] {
-  let processed: string[] = [];
-  for (let i = 0; i < 100; i++) {
-    processed = tags.map((tag) => {
-      let r = tag;
-      for (let j = 0; j < 10; j++) {
-        r = r.toLowerCase().trim();
-        r = "#" + r.charAt(0).toUpperCase() + r.slice(1);
-      }
-      return r;
-    });
-  }
-  return processed;
+  return tags.map(tag => {
+    const r = tag.trim().toLowerCase();
+    return '#' + r.charAt(0).toUpperCase() + r.slice(1);
+  })
 }
