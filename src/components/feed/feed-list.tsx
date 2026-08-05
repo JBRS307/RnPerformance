@@ -1,19 +1,16 @@
-import { ComponentType, useCallback } from "react";
+import { useCallback } from "react";
 import {
   StyleSheet,
   View,
 } from "react-native";
 import Animated, { SharedValue, useAnimatedScrollHandler, useAnimatedStyle, useSharedValue } from "react-native-reanimated";
-import { FlashList, FlashListProps } from '@shopify/flash-list';
+import { FlashList } from '@shopify/flash-list';
 
 import { FeedItem } from "@/components/feed/feed-item";
 import { SuggestedPostsSection } from "@/components/feed/suggestions/suggested-posts-section";
 import { FeedListItem } from "@/data/mock-feed";
 
-const AnimatedFlashList =
-  Animated.createAnimatedComponent(
-    FlashList as ComponentType<FlashListProps<FeedListItem>>
-  );
+const AnimatedFlashList = Animated.createAnimatedComponent(FlashList<FeedListItem>);
 
 export const FeedList = ({
   data,
@@ -26,7 +23,7 @@ export const FeedList = ({
     const offset = event.contentOffset.y;
     const max = Math.max(1, event.contentSize.height - event.layoutMeasurement.height);
     const p = Math.min(1, Math.max(0, offset / max));
-    progress.set(p);
+    progress.value = p;
   });
 
   const renderItem = useCallback(({ item }: { item: FeedListItem }) => (

@@ -1,4 +1,4 @@
-import { useState, useContext } from "react";
+import { useContext, useLayoutEffect, useRef } from "react";
 import { ScrollView, View, Pressable, NativeSyntheticEvent, NativeScrollEvent, StyleSheet } from "react-native";
 
 import { ColorsContext } from "@/context/colors-context";
@@ -20,6 +20,11 @@ export const ImageCarousel = ({
   const [activeIndex, setActiveIndex] = useRecyclingState(0, [postId]);
   const colors = useContext(ColorsContext);
   const { getMappingKey } = useMappingHelper();
+  const scrollRef = useRef<ScrollView>(null);
+
+  useLayoutEffect(() => {
+    scrollRef.current?.scrollTo({ x: 0, animated: false });
+  }, [postId]);
 
   const handleScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
     const offset = e.nativeEvent.contentOffset.x;
@@ -32,6 +37,7 @@ export const ImageCarousel = ({
   return (
     <View>
       <ScrollView
+        ref={scrollRef}
         horizontal
         pagingEnabled
         showsHorizontalScrollIndicator={false}
