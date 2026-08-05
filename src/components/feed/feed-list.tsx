@@ -1,13 +1,19 @@
-import { useCallback, useRef } from "react";
+import { ComponentType, useCallback } from "react";
 import {
   StyleSheet,
   View,
 } from "react-native";
+import Animated, { SharedValue, useAnimatedScrollHandler, useAnimatedStyle, useSharedValue } from "react-native-reanimated";
+import { FlashList, FlashListProps } from '@shopify/flash-list';
 
 import { FeedItem } from "@/components/feed/feed-item";
 import { SuggestedPostsSection } from "@/components/feed/suggestions/suggested-posts-section";
 import { FeedListItem } from "@/data/mock-feed";
-import Animated, { SharedValue, useAnimatedScrollHandler, useAnimatedStyle, useSharedValue } from "react-native-reanimated";
+
+const AnimatedFlashList =
+  Animated.createAnimatedComponent(
+    FlashList as ComponentType<FlashListProps<FeedListItem>>
+  );
 
 export const FeedList = ({
   data,
@@ -31,10 +37,12 @@ export const FeedList = ({
     )
   ), []);
 
+  const getItemType = useCallback((item: FeedListItem) => item.type, []);
+
   return (
     <View style={styles.wrapper}>
       <ProgressBar progress={progress} />
-      <Animated.FlatList
+      <AnimatedFlashList
         data={data}
         renderItem={renderItem}
         keyExtractor={item => item.id}
@@ -42,6 +50,7 @@ export const FeedList = ({
         contentContainerStyle={styles.content}
         onScroll={handleScroll}
         scrollEventThrottle={16}
+        getItemType={getItemType}
       />
     </View>
   );
