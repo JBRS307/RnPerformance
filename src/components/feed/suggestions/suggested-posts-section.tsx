@@ -6,10 +6,12 @@ import { ColorsContext } from "@/context/colors-context";
 import { SuggestedPost } from "@/data/mock-feed";
 
 import { SuggestedPostCard } from "./suggested-post-card";
+import { useMappingHelper } from "@shopify/flash-list";
 
 export const SuggestedPostsSection = ({ posts }: { posts: SuggestedPost[] }) => {
   const colors = useContext(ColorsContext);
   const router = useRouter();
+  const { getMappingKey } = useMappingHelper();
 
   const openSuggestions = () => {
     router.push("/suggestions");
@@ -24,8 +26,8 @@ export const SuggestedPostsSection = ({ posts }: { posts: SuggestedPost[] }) => 
         </TouchableOpacity>
       </View>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-        {posts.map((post) => (
-          <SuggestedPostCard key={post.id} post={post} />
+        {posts.map((post, index) => (
+          <SuggestedPostCard key={getMappingKey(post.id, index)} post={post} />
         ))}
       </ScrollView>
     </View>

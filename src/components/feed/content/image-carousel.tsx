@@ -4,18 +4,22 @@ import { ScrollView, View, Pressable, NativeSyntheticEvent, NativeScrollEvent, S
 import { ColorsContext } from "@/context/colors-context";
 import { FeedImage } from "@/data/mock-feed";
 import { CarouselImage } from "./carousel-image";
+import { useMappingHelper, useRecyclingState } from "@shopify/flash-list";
 
 const IMAGE_WIDTH = 400;
 
 export const ImageCarousel = ({
+  postId,
   images,
   onImagePress,
 }: {
+  postId: string;
   images: FeedImage[];
   onImagePress?: () => void;
 }) => {
-  const [activeIndex, setActiveIndex] = useState(0);
+  const [activeIndex, setActiveIndex] = useRecyclingState(0, [postId]);
   const colors = useContext(ColorsContext);
+  const { getMappingKey } = useMappingHelper();
 
   const handleScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
     const offset = e.nativeEvent.contentOffset.x;
@@ -34,8 +38,8 @@ export const ImageCarousel = ({
         onMomentumScrollEnd={handleScroll}
         scrollEventThrottle={16}
       >
-        {images.map((image, i) => (
-          <Pressable key={`${image.uri}-${i}`} onPress={onImagePress}>
+        {images.map((image, index) => (
+          <Pressable key={getMappingKey(`${image.uri}-${index}`, index)} onPress={onImagePress}>
             <CarouselImage image={image} />
           </Pressable>
         ))}
@@ -45,7 +49,7 @@ export const ImageCarousel = ({
         <View style={styles.dotsContainer}>
           {images.map((_, i) => (
             <View
-              key={`dot-${i}`}
+              key={getMappingKey(`dot-${i}`, i)}
               style={[
                 styles.dot,
                 i === activeIndex

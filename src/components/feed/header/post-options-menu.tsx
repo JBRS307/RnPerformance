@@ -6,6 +6,7 @@ import { useRouter } from "expo-router";
 
 import { ColorsContext } from "@/context/colors-context";
 import { IconSymbol } from "@/components/ui/icon-symbol.ios";
+import { useMappingHelper, useRecyclingState } from "@shopify/flash-list";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const POPOVER_WIDTH = 220;
@@ -38,7 +39,8 @@ export const PostOptionsMenu = ({
 }: PostOptionsMenuProps) => {
   const colors = useContext(ColorsContext);
   const router = useRouter();
-  const [isReported, setIsReported] = useState(false);
+  const [isReported, setIsReported] = useRecyclingState(false, [postId]);
+  const { getMappingKey } = useMappingHelper();
 
   const handleCopyLink = async () => {
     await Clipboard.setStringAsync(`https://example.com/post/${postId}`);
@@ -114,7 +116,7 @@ export const PostOptionsMenu = ({
         >
           {menuOptions.map((option, index) => (
             <TouchableOpacity
-              key={option.label}
+              key={getMappingKey(option.label, index)}
               onPress={option.onPress}
               style={[
                 styles.menuItem,

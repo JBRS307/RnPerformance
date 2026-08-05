@@ -5,6 +5,7 @@ import { useRouter } from "expo-router";
 import { ColorsContext } from "@/context/colors-context";
 import { LikesCount } from "@/components/feed/content/likes-count";
 import { IconSymbol } from "@/components/ui/icon-symbol.ios";
+import { useRecyclingState } from "@shopify/flash-list";
 
 export const ActionButtons = ({
   postId,
@@ -17,8 +18,8 @@ export const ActionButtons = ({
   likesInitial: number;
   isLikedInitial: boolean;
 }) => {
-  const [likes, setLikes] = useState(likesInitial);
-  const [isLiked, setIsLiked] = useState(isLikedInitial);
+  const [likes, setLikes] = useRecyclingState(likesInitial, [postId]);
+  const [isLiked, setIsLiked] = useRecyclingState(isLikedInitial, [postId]);
   const colors = useContext(ColorsContext);
   const router = useRouter();
 
