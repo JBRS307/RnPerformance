@@ -1,9 +1,9 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState, useEffect, useCallback, useRef } from "react";
-import { View, Text, Image, TouchableOpacity, FlatList, TextInput, KeyboardAvoidingView, Platform } from "react-native";
+import { View, Text, Image, TouchableOpacity, FlatList, KeyboardAvoidingView, Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { CommentInput } from "@/components/feed/comment-input";
+import { CommentInput, CommentInputHandle } from "@/components/feed/comment-input";
 import { CommentItem } from "@/components/feed/comments/comment-item";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { Colors } from "@/constants/theme";
@@ -24,12 +24,10 @@ export default function CommentsScreen() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? "light"];
   const insets = useSafeAreaInsets();
-  const inputRef = useRef<TextInput>(null);
+  const inputRef = useRef<CommentInputHandle>(null);
 
   const [post, setPost] = useState<FeedPost | null>(null);
   const [comments, setComments] = useState<FeedComment[]>([]);
-  const [newComment, setNewComment] = useState("");
-  const [replyInfo, setReplyInfo] = useState<ReplyInfo | null>(null);
 
   useEffect(() => {
     const foundPost = MOCK_FEED.find(p => p.id === id);
@@ -44,15 +42,15 @@ export default function CommentsScreen() {
   }, [router]);
 
   const handleReply = useCallback((commentId: string, username: string) => {
-    setReplyInfo({ commentId, username });
-    setNewComment(`@${username} `);
+    inputRef.current?.setReplyInfo({ commentId, username });
+    inputRef.current?.setText(`@${username} `);
     inputRef.current?.focus();
   }, []);
 
-  const handleAddComment = useCallback(() => {
-    if (!newComment.trim() || !post) return;
+  const handleAddComment = useCallback((text: string, replyInfo?: ReplyInfo) => {
+    if (!text.trim() || !post) return;
 
-    const commentText = replyInfo ? newComment.replace(`@${replyInfo.username} `, "") : newComment;
+    const commentText = replyInfo !== undefined ? text.replace(`@${replyInfo.username} `, "") : text;
 
     // Build mention suggestions for the comment context
     const mentionSuggestions = buildMentionSuggestions(comments, commentText);
@@ -61,7 +59,7 @@ export default function CommentsScreen() {
       id: `new-comment-${Date.now()}`,
       username: "you",
       avatar: "https://i.pravatar.cc/150?img=68",
-      text: commentText.trim(),
+      text: text.trim(),
       likes: 0,
       timestamp: "Just now",
       replyingTo: replyInfo?.username,
@@ -73,7 +71,7 @@ export default function CommentsScreen() {
       replies: []
     };
 
-    if (replyInfo) {
+    if (replyInfo !== undefined) {
       // Add as reply to existing comment
       setComments(prev =>
         prev.map(comment => {
@@ -91,14 +89,8 @@ export default function CommentsScreen() {
       setComments(prev => [newCommentObj, ...prev]);
     }
 
-    setNewComment("");
-    setReplyInfo(null);
-  }, [newComment, post, replyInfo, comments]);
-
-  const cancelReply = useCallback(() => {
-    setReplyInfo(null);
-    setNewComment("");
-  }, []);
+    inputRef.current?.clear();
+  }, [post, comments]);
 
   if (!post) {
     return (
@@ -222,40 +214,13 @@ export default function CommentsScreen() {
           }
         />
 
-        {/* Reply indicator */}
-        {replyInfo && (
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: "space-between",
-              paddingHorizontal: 16,
-              paddingVertical: 8,
-              backgroundColor: colors.icon + "15",
-              borderTopWidth: 0.5,
-              borderTopColor: colors.icon + "30"
-            }}
-          >
-            <Text style={{ fontSize: 13, color: colors.icon }}>
-              Replying to <Text style={{ color: colors.text, fontWeight: "600" }}>@{replyInfo.username}</Text>
-            </Text>
-            <TouchableOpacity onPress={cancelReply}>
-              <IconSymbol name="xmark" size={18} color={colors.icon} />
-            </TouchableOpacity>
-          </View>
-        )}
-
         {/* Comment Input */}
         <CommentInput
           ref={inputRef}
-          value={newComment}
-          onChangeText={setNewComment}
           onSubmit={handleAddComment}
-          placeholder={replyInfo ? `Reply to @${replyInfo.username}...` : "Add a comment..."}
           colors={colors}
           comments={comments}
           bottomInset={insets.bottom}
-          showTopBorder={!replyInfo}
         />
       </KeyboardAvoidingView>
     </ColorsContext.Provider>

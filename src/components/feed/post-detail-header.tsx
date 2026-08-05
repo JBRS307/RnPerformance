@@ -155,9 +155,9 @@ const InteractionsView = ({ post }: { post: FeedPost }) => {
     })
   }, []);
 
-  const onShareComplete = () => {
+  const onShareComplete = useCallback(() => {
     setShareCount(prevShares => prevShares + 1);
-  };
+  }, []);
 
   return (
     <>
@@ -176,7 +176,7 @@ const InteractionsView = ({ post }: { post: FeedPost }) => {
             postId={post.id}
             username={post.user.username}
             colors={colors}
-            onShareComplete={() => onShareComplete()}
+            onShareComplete={onShareComplete}
           />
         </View>
         <BookmarkButton initialIsBookmarked={post.isBookmarked} colors={colors} />

@@ -1,9 +1,10 @@
-import { forwardRef, useCallback, useMemo } from "react";
+import { forwardRef, useCallback, useImperativeHandle, useMemo, useRef, useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, ScrollView, Image } from "react-native";
 
 import { Colors } from "@/constants/theme";
 import { FeedComment } from "@/data/mock-feed";
 import { buildMentionSuggestions } from "@/utils/mention-utils";
+import { IconSymbol } from "../ui/icon-symbol";
 
 function MentionSuggestions({
   suggestions,
@@ -60,25 +61,80 @@ function MentionSuggestions({
   );
 }
 
+interface ReplyBannerProps {
+  colors: typeof Colors.light;
+  replyInfo: ReplyInfo;
+  cancelReply: () => void;
+}
+
+const ReplyBanner = ({ colors, replyInfo, cancelReply }: ReplyBannerProps) => {
+  return (
+    <View
+      style={{
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        backgroundColor: colors.icon + "15",
+        borderTopWidth: 0.5,
+        borderTopColor: colors.icon + "30",
+      }}
+    >
+      <Text style={{ fontSize: 13, color: colors.icon }}>
+        Replying to{" "}
+        <Text style={{ color: colors.text, fontWeight: "600" }}>
+          @{replyInfo.username}
+        </Text>
+      </Text>
+      <TouchableOpacity onPress={cancelReply}>
+        <IconSymbol name="xmark" size={18} color={colors.icon} />
+      </TouchableOpacity>
+    </View>
+  );
+}
+
 interface CommentInputProps {
-  value: string;
-  onChangeText: (text: string) => void;
-  onSubmit: () => void;
-  placeholder: string;
+  onSubmit: (text: string, replyInfo?: ReplyInfo) => void;
   colors: typeof Colors.light;
   comments: FeedComment[];
   bottomInset: number;
-  showTopBorder: boolean;
+}
+
+interface ReplyInfo {
+  commentId: string;
+  username: string;
+}
+
+interface CommentInputHandle {
+  focus: () => void;
+  setText: (text: string) => void;
+  setReplyInfo: (replyInfo: ReplyInfo) => void;
+  clear: () => void;
 }
 
 /**
  * A comment input with a horizontal mention-suggestion bar that appears
  * when the user is typing an @mention.
  */
-const CommentInput = forwardRef<TextInput, CommentInputProps>(function CommentInput(
-  { value, onChangeText, onSubmit, placeholder, colors, comments, bottomInset, showTopBorder },
+const CommentInput = forwardRef<CommentInputHandle, CommentInputProps>(function CommentInput(
+  { onSubmit, colors, comments, bottomInset },
   ref
 ) {
+  const [value, setValue] = useState('');
+  const [replyInfo, setReplyInfo] = useState<ReplyInfo | null>(null);
+  const inputRef = useRef<TextInput>(null);
+
+  useImperativeHandle(ref, () => ({
+    focus: () => inputRef.current?.focus(),
+    setText: setValue,
+    setReplyInfo: setReplyInfo,
+    clear: () => {
+      setValue('');
+      setReplyInfo(null);
+    }
+  }), []);
+
   const isTypingMention = value.match(/@(\w*)$/) !== null;
 
   const mentionSuggestions = useMemo(() => buildMentionSuggestions(comments, value), [comments, value]);
@@ -87,15 +143,25 @@ const CommentInput = forwardRef<TextInput, CommentInputProps>(function CommentIn
 
   const handleSelectMention = useCallback(
     (username: string) => {
-      const atIndex = value.lastIndexOf("@");
-      const before = value.slice(0, atIndex);
-      onChangeText(`${before}@${username} `);
+      setValue(prev => {
+        const atIndex = prev.lastIndexOf('@');
+        if (atIndex === -1) return `${prev}@${username} `;
+        return `${prev.slice(0, atIndex)}@${username} `;
+      });
     },
-    [value, onChangeText]
+    []
   );
+
+  const cancelReply = () => {
+    setReplyInfo(null);
+    setValue('');
+  };
+
+  const showTopBorder = replyInfo === null;
 
   return (
     <View>
+      {replyInfo && <ReplyBanner colors={colors} replyInfo={replyInfo} cancelReply={cancelReply} />}
       {/* Mention suggestions bar — each chip is artificially heavy */}
       {showSuggestions && (
         <MentionSuggestions suggestions={mentionSuggestions} colors={colors} onSelect={handleSelectMention} />
@@ -120,7 +186,7 @@ const CommentInput = forwardRef<TextInput, CommentInputProps>(function CommentIn
         />
 
         <TextInput
-          ref={ref}
+          ref={inputRef}
           style={{
             flex: 1,
             marginHorizontal: 12,
@@ -131,15 +197,19 @@ const CommentInput = forwardRef<TextInput, CommentInputProps>(function CommentIn
             color: colors.text,
             fontSize: 14
           }}
-          placeholder={placeholder}
+          placeholder={
+            replyInfo
+              ? `Reply to @${replyInfo.username}`
+              : "Add a comment..."
+          }
           placeholderTextColor={colors.icon}
           value={value}
-          onChangeText={onChangeText}
+          onChangeText={setValue}
           multiline
           maxLength={500}
         />
 
-        <TouchableOpacity onPress={onSubmit} disabled={!value.trim()}>
+        <TouchableOpacity onPress={() => onSubmit(value, replyInfo ?? undefined)} disabled={!value.trim()}>
           <Text
             style={{
               color: value.trim() ? "#271c2d" : colors.icon,
@@ -155,4 +225,4 @@ const CommentInput = forwardRef<TextInput, CommentInputProps>(function CommentIn
   );
 });
 
-export { CommentInput };
+export { CommentInput, CommentInputHandle };

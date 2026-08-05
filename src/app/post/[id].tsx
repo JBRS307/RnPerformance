@@ -1,12 +1,11 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import {
   View,
   Text,
   Image,
   TouchableOpacity,
   FlatList,
-  TextInput,
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
@@ -21,7 +20,7 @@ import { useColorScheme } from "@/hooks/use-color-scheme";
 import { buildMentionSuggestions } from "@/utils/mention-utils";
 import { detectSpam } from "@/utils/spam-detection";
 
-import { CommentInput } from "@/components/feed/comment-input";
+import { CommentInput, CommentInputHandle } from "@/components/feed/comment-input";
 import { CommentItem } from "@/components/feed/comments/comment-item";
 import { findRelatedPosts } from "@/utils/related-posts";
 
@@ -34,12 +33,10 @@ const PostDetailScreen = () => {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const inputRef = useRef<TextInput>(null);
+  const commentInputRef = useRef<CommentInputHandle>(null);
   const prevCommentsLengthRef = useRef(0);
   const [post, setPost] = useState<FeedPost | null>(null);
   const [comments, setComments] = useState<FeedComment[]>([]);
-  const [newComment, setNewComment] = useState("");
-  const [replyInfo, setReplyInfo] = useState<ReplyInfo | null>(null);
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? "light"];
 
@@ -54,20 +51,20 @@ const PostDetailScreen = () => {
   const hasNewComments = comments.length > prevCommentsLengthRef.current;
   prevCommentsLengthRef.current = comments.length;
 
-  const relatedPosts = post ? findRelatedPosts(post) : [];
+  const relatedPosts = useMemo(() => post ? findRelatedPosts(post) : [], [post]);
 
   const handleReply = useCallback((commentId: string, username: string) => {
-    setReplyInfo({ commentId, username });
-    setNewComment(`@${username} `);
-    inputRef.current?.focus();
+    commentInputRef.current?.setReplyInfo({ commentId, username });
+    commentInputRef.current?.setText(`@${username} `);
+    commentInputRef.current?.focus();
   }, []);
 
-  const handleAddComment = useCallback(() => {
-    if (!newComment.trim() || !post) return;
+  const handleAddComment = useCallback((text: string, replyInfo?: ReplyInfo) => {
+    if (!text.trim() || !post) return;
 
-    const commentText = replyInfo
-      ? newComment.replace(`@${replyInfo.username} `, "")
-      : newComment;
+    const commentText = replyInfo != undefined
+      ? text.replace(`@${replyInfo.username} `, "")
+      : text;
 
     // Run spam detection — blocks the JS thread
     const { isSpam, maxSimilarity } = detectSpam(commentText, comments);
@@ -97,7 +94,7 @@ const PostDetailScreen = () => {
       replies: [],
     };
 
-    if (replyInfo) {
+    if (replyInfo != undefined) {
       // Add as reply to existing comment
       setComments((prev) =>
         prev.map((comment) => {
@@ -114,14 +111,8 @@ const PostDetailScreen = () => {
       setComments((prev) => [newCommentObj, ...prev]);
     }
 
-    setNewComment("");
-    setReplyInfo(null);
-  }, [newComment, post, replyInfo, comments]);
-
-  const cancelReply = useCallback(() => {
-    setReplyInfo(null);
-    setNewComment("");
-  }, []);
+    commentInputRef.current?.clear();
+  }, [post, comments]);
 
   if (!post) {
     return (
@@ -181,7 +172,6 @@ const PostDetailScreen = () => {
         {/* Post Content and Comments List */}
         <FlatList
           data={comments}
-          extraData={[post.isLiked, post.likes, post.shares.length]}
           ListHeaderComponent={
             <PostDetailHeader
               post={post}
@@ -276,47 +266,13 @@ const PostDetailScreen = () => {
           }
         />
 
-        {/* Reply indicator */}
-        {replyInfo && (
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: "space-between",
-              paddingHorizontal: 16,
-              paddingVertical: 8,
-              backgroundColor: colors.icon + "15",
-              borderTopWidth: 0.5,
-              borderTopColor: colors.icon + "30",
-            }}
-          >
-            <Text style={{ fontSize: 13, color: colors.icon }}>
-              Replying to{" "}
-              <Text style={{ color: colors.text, fontWeight: "600" }}>
-                @{replyInfo.username}
-              </Text>
-            </Text>
-            <TouchableOpacity onPress={cancelReply}>
-              <IconSymbol name="xmark" size={18} color={colors.icon} />
-            </TouchableOpacity>
-          </View>
-        )}
-
         {/* Comment Input */}
         <CommentInput
-          ref={inputRef}
-          value={newComment}
-          onChangeText={setNewComment}
+          ref={commentInputRef}
           onSubmit={handleAddComment}
-          placeholder={
-            replyInfo
-              ? `Reply to @${replyInfo.username}...`
-              : "Add a comment..."
-          }
           colors={colors}
           comments={comments}
           bottomInset={insets.bottom}
-          showTopBorder={!replyInfo}
         />
       </KeyboardAvoidingView>
     </ColorsContext.Provider>
