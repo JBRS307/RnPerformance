@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useImperativeHandle, useRef, useState } from "react";
 import {
   FlatList,
   LayoutChangeEvent,
@@ -19,13 +19,13 @@ export const FeedList = ({
 }) => {
   const contentHeight = useRef(0);
   const layoutHeight = useRef(0);
-  const [progress, setProgress] = useState(0);
+  const progressRef = useRef<ProgressBarHandle>(null);
 
   const handleScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
     const offset = e.nativeEvent.contentOffset.y;
     const max = Math.max(1, contentHeight.current - layoutHeight.current);
     const p = Math.min(1, Math.max(0, offset / max));
-    setProgress(p);
+    progressRef.current?.updateProgress(p);
   };
 
   const handleContentSizeChange = (_w: number, h: number) => {
@@ -38,9 +38,7 @@ export const FeedList = ({
 
   return (
     <View style={styles.wrapper}>
-      <View style={styles.progressTrack}>
-        <View style={[styles.progressFill, { width: `${progress * 100}%` }]} />
-      </View>
+      <ProgressBar ref={progressRef} />
       <FlatList
         data={data}
         renderItem={({ item }) => (
@@ -62,6 +60,25 @@ export const FeedList = ({
         onContentSizeChange={handleContentSizeChange}
         onLayout={handleLayout}
       />
+    </View>
+  );
+};
+
+interface ProgressBarHandle {
+  updateProgress: (progress: number) => void;
+}
+
+const ProgressBar = ({ ref }: { ref: React.Ref<ProgressBarHandle> }) => {
+  const [progress, setProgress] = useState(0);
+
+  useImperativeHandle(ref,
+    () => ({
+      updateProgress: (progress: number) => setProgress(progress),
+    }));
+
+  return (
+    <View style={styles.progressTrack}>
+      <View style={[styles.progressFill, { width: `${progress * 100}%` }]} />
     </View>
   );
 };
