@@ -1,5 +1,5 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo, useDeferredValue } from "react";
 import {
   View,
   Text,
@@ -36,6 +36,7 @@ const PostDetailScreen = () => {
   const commentInputRef = useRef<CommentInputHandle>(null);
   const prevCommentsLengthRef = useRef(0);
   const [post, setPost] = useState<FeedPost | null>(null);
+  const deferredPost = useDeferredValue(post);
   const [comments, setComments] = useState<FeedComment[]>([]);
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? "light"];
@@ -50,8 +51,7 @@ const PostDetailScreen = () => {
 
   const hasNewComments = comments.length > prevCommentsLengthRef.current;
   prevCommentsLengthRef.current = comments.length;
-
-  const relatedPosts = useMemo(() => post ? findRelatedPosts(post) : [], [post]);
+  const relatedPosts = useMemo(() => deferredPost ? findRelatedPosts(deferredPost) : [], [deferredPost]);
 
   const handleReply = useCallback((commentId: string, username: string) => {
     commentInputRef.current?.setReplyInfo({ commentId, username });
@@ -62,7 +62,7 @@ const PostDetailScreen = () => {
   const handleAddComment = useCallback((text: string, replyInfo?: ReplyInfo) => {
     if (!text.trim() || !post) return;
 
-    const commentText = replyInfo != undefined
+    const commentText = replyInfo
       ? text.replace(`@${replyInfo.username} `, "")
       : text;
 
@@ -94,7 +94,7 @@ const PostDetailScreen = () => {
       replies: [],
     };
 
-    if (replyInfo != undefined) {
+    if (replyInfo) {
       // Add as reply to existing comment
       setComments((prev) =>
         prev.map((comment) => {
