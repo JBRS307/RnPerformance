@@ -1,4 +1,4 @@
-import { useImperativeHandle, useRef, useState } from "react";
+import { useCallback, useImperativeHandle, useRef, useState } from "react";
 import {
   FlatList,
   LayoutChangeEvent,
@@ -36,18 +36,20 @@ export const FeedList = ({
     layoutHeight.current = e.nativeEvent.layout.height;
   };
 
+  const renderItem = useCallback(({ item }: { item: FeedListItem }) => (
+    item.type === 'suggestions' ? (
+      <SuggestedPostsSection posts={item.posts} />
+    ) : (
+      <FeedItem item={item} />
+    )
+  ), []);
+
   return (
     <View style={styles.wrapper}>
       <ProgressBar ref={progressRef} />
       <FlatList
         data={data}
-        renderItem={({ item }) => (
-          item.type === "suggestions" ? (
-            <SuggestedPostsSection posts={item.posts} />
-          ) : (
-            <FeedItem item={item} />
-          )
-        )}
+        renderItem={renderItem}
         keyExtractor={item => item.id}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.content}

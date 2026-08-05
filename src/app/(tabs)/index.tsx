@@ -6,10 +6,11 @@ import { Colors } from "@/constants/theme";
 import { ColorsContext } from "@/context/colors-context";
 import { MOCK_FEED, toSlimFeed } from "@/data/mock-feed";
 import { useColorScheme } from "@/hooks/use-color-scheme";
+import { useMemo } from "react";
 
 const HomeScreen = () => {
   const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? "light"];
+  const colors = useMemo(() => Colors[colorScheme ?? "light"], [colorScheme]);
 
   const feedData = toSlimFeed(MOCK_FEED);
 
