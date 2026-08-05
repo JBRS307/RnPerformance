@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useCallback, useImperativeHandle, useRef, useState } from "react";
 import {
   FlatList,
   LayoutChangeEvent,
@@ -14,20 +14,18 @@ import { FeedListItem } from "@/data/mock-feed";
 
 export const FeedList = ({
   data,
-  onLike,
 }: {
   data: FeedListItem[];
-  onLike: (id: string) => void;
 }) => {
   const contentHeight = useRef(0);
   const layoutHeight = useRef(0);
-  const [progress, setProgress] = useState(0);
+  const progressRef = useRef<ProgressBarHandle>(null);
 
   const handleScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
     const offset = e.nativeEvent.contentOffset.y;
     const max = Math.max(1, contentHeight.current - layoutHeight.current);
     const p = Math.min(1, Math.max(0, offset / max));
-    setProgress(p);
+    progressRef.current?.updateProgress(p);
   };
 
   const handleContentSizeChange = (_w: number, h: number) => {
@@ -38,21 +36,21 @@ export const FeedList = ({
     layoutHeight.current = e.nativeEvent.layout.height;
   };
 
+  const renderItem = useCallback(({ item }: { item: FeedListItem }) => (
+    item.type === 'suggestions' ? (
+      <SuggestedPostsSection posts={item.posts} />
+    ) : (
+      <FeedItem item={item} />
+    )
+  ), []);
+
   return (
     <View style={styles.wrapper}>
-      <View style={styles.progressTrack}>
-        <View style={[styles.progressFill, { width: `${progress * 100}%` }]} />
-      </View>
+      <ProgressBar ref={progressRef} />
       <FlatList
         data={data}
-        renderItem={({ item }) => (
-          item.type === "suggestions" ? (
-            <SuggestedPostsSection posts={item.posts} />
-          ) : (
-            <FeedItem item={item} onLike={onLike} />
-          )
-        )}
-        keyExtractor={(_item, index) => String(index)}
+        renderItem={renderItem}
+        keyExtractor={item => item.id}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.content}
         windowSize={21}
@@ -64,6 +62,25 @@ export const FeedList = ({
         onContentSizeChange={handleContentSizeChange}
         onLayout={handleLayout}
       />
+    </View>
+  );
+};
+
+interface ProgressBarHandle {
+  updateProgress: (progress: number) => void;
+}
+
+const ProgressBar = ({ ref }: { ref: React.Ref<ProgressBarHandle> }) => {
+  const [progress, setProgress] = useState(0);
+
+  useImperativeHandle(ref,
+    () => ({
+      updateProgress: (progress: number) => setProgress(progress),
+    }));
+
+  return (
+    <View style={styles.progressTrack}>
+      <View style={[styles.progressFill, { width: `${progress * 100}%` }]} />
     </View>
   );
 };

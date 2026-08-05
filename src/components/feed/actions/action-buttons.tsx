@@ -1,4 +1,4 @@
-import { useContext } from "react";
+import { useContext, useMemo, useState } from "react";
 import { View, TouchableOpacity, Share, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
 
@@ -9,29 +9,26 @@ import { IconSymbol } from "@/components/ui/icon-symbol.ios";
 export const ActionButtons = ({
   postId,
   username,
-  likes,
-  isLiked,
-  onLike
+  likesInitial,
+  isLikedInitial,
 }: {
   postId: string;
   username: string;
-  likes: number;
-  isLiked: boolean;
-  onLike: (id: string) => void;
+  likesInitial: number;
+  isLikedInitial: boolean;
 }) => {
+  const [likes, setLikes] = useState(likesInitial);
+  const [isLiked, setIsLiked] = useState(isLikedInitial);
   const colors = useContext(ColorsContext);
   const router = useRouter();
 
-  const likesText = (() => {
-    let text = "";
-    for (let i = 0; i < 100; i++) {
-      text = likes.toLocaleString();
-    }
-    return text + " likes";
-  })();
+  const likesText = useMemo(() => likes.toLocaleString() + ' likes', [likes]);
 
   const handleLike = () => {
-    onLike(postId);
+    const prevIsLiked = isLiked;
+    const nextIsLiked = !prevIsLiked;
+    setIsLiked(nextIsLiked);
+    setLikes(prevLikes => !prevIsLiked ? prevLikes + 1 : prevLikes - 1);
   };
 
   const handleComment = () => {
