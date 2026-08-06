@@ -1,12 +1,10 @@
 import { useCallback, useContext, useLayoutEffect, useRef } from "react";
-import { View, Pressable, NativeSyntheticEvent, NativeScrollEvent, StyleSheet } from "react-native";
+import { View, Pressable, NativeSyntheticEvent, NativeScrollEvent, StyleSheet, useWindowDimensions, LayoutChangeEvent } from "react-native";
 
 import { ColorsContext } from "@/context/colors-context";
 import { FeedImage } from "@/data/mock-feed";
 import { CarouselImage } from "./carousel-image";
 import { FlashList, FlashListRef, useMappingHelper, useRecyclingState } from "@shopify/flash-list";
-
-const IMAGE_WIDTH = 400;
 
 export const ImageCarousel = ({
   postId,
@@ -22,13 +20,21 @@ export const ImageCarousel = ({
   const { getMappingKey } = useMappingHelper();
   const listRef = useRef<FlashListRef<FeedImage>>(null);
 
+  const { width: windowWidth } = useWindowDimensions();
+  const [pageWidth, setPageWidth] = useRecyclingState(windowWidth, [postId]);
+
+  const handleLayout = useCallback((e: LayoutChangeEvent) => {
+    const { width } = e.nativeEvent.layout;
+    setPageWidth(prev => width > 0 && width !== prev ? width : prev);
+  }, []);
+
   useLayoutEffect(() => {
     listRef.current?.scrollToTop({ animated: false });
   }, [postId])
 
   const handleScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
     const offset = e.nativeEvent.contentOffset.x;
-    const index = Math.round(offset / IMAGE_WIDTH);
+    const index = Math.round(offset / pageWidth);
     if (index !== activeIndex) {
       setActiveIndex(index);
     }
@@ -36,12 +42,12 @@ export const ImageCarousel = ({
 
   const renderItem = useCallback(({ item }: { item: FeedImage }) => (
     <Pressable onPress={onImagePress}>
-      <CarouselImage image={item} />
+      <CarouselImage image={item} width={pageWidth} />
     </Pressable>
-  ), [onImagePress]);
+  ), [onImagePress, pageWidth]);
 
   return (
-    <View>
+    <View onLayout={handleLayout}>
       <FlashList
         ref={listRef}
         horizontal
