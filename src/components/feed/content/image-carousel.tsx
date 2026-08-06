@@ -1,10 +1,10 @@
-import { useContext, useLayoutEffect, useRef } from "react";
-import { ScrollView, View, Pressable, NativeSyntheticEvent, NativeScrollEvent, StyleSheet } from "react-native";
+import { useCallback, useContext, useLayoutEffect, useRef } from "react";
+import { View, Pressable, NativeSyntheticEvent, NativeScrollEvent, StyleSheet } from "react-native";
 
 import { ColorsContext } from "@/context/colors-context";
 import { FeedImage } from "@/data/mock-feed";
 import { CarouselImage } from "./carousel-image";
-import { useMappingHelper, useRecyclingState } from "@shopify/flash-list";
+import { FlashList, FlashListRef, useMappingHelper, useRecyclingState } from "@shopify/flash-list";
 
 const IMAGE_WIDTH = 400;
 
@@ -20,11 +20,11 @@ export const ImageCarousel = ({
   const [activeIndex, setActiveIndex] = useRecyclingState(0, [postId]);
   const colors = useContext(ColorsContext);
   const { getMappingKey } = useMappingHelper();
-  const scrollRef = useRef<ScrollView>(null);
+  const listRef = useRef<FlashListRef<FeedImage>>(null);
 
   useLayoutEffect(() => {
-    scrollRef.current?.scrollTo({ x: 0, animated: false });
-  }, [postId]);
+    listRef.current?.scrollToTop({ animated: false });
+  }, [postId])
 
   const handleScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
     const offset = e.nativeEvent.contentOffset.x;
@@ -34,22 +34,25 @@ export const ImageCarousel = ({
     }
   };
 
+  const renderItem = useCallback(({ item }: { item: FeedImage }) => (
+    <Pressable onPress={onImagePress}>
+      <CarouselImage image={item} />
+    </Pressable>
+  ), []);
+
   return (
     <View>
-      <ScrollView
-        ref={scrollRef}
+      <FlashList
+        ref={listRef}
         horizontal
+        data={images}
+        renderItem={renderItem}
+        keyExtractor={item => item.uri}
         pagingEnabled
-        showsHorizontalScrollIndicator={false}
         onMomentumScrollEnd={handleScroll}
         scrollEventThrottle={16}
-      >
-        {images.map((image, index) => (
-          <Pressable key={getMappingKey(image.uri, index)} onPress={onImagePress}>
-            <CarouselImage image={image} />
-          </Pressable>
-        ))}
-      </ScrollView>
+        showsHorizontalScrollIndicator={false}
+      />
 
       {images.length > 1 && (
         <View style={styles.dotsContainer}>

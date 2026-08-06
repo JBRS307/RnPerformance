@@ -1,21 +1,24 @@
-import { useContext } from "react";
-import { ScrollView, View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { useCallback, useContext } from "react";
+import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
 
 import { ColorsContext } from "@/context/colors-context";
 import { SuggestedPost } from "@/data/mock-feed";
 
 import { SuggestedPostCard } from "./suggested-post-card";
-import { useMappingHelper } from "@shopify/flash-list";
+import { FlashList } from "@shopify/flash-list";
 
 export const SuggestedPostsSection = ({ posts }: { posts: SuggestedPost[] }) => {
   const colors = useContext(ColorsContext);
   const router = useRouter();
-  const { getMappingKey } = useMappingHelper();
 
   const openSuggestions = () => {
     router.push("/suggestions");
   };
+
+  const renderItem = useCallback(({ item }: { item: SuggestedPost }) => (
+    <SuggestedPostCard post={item} />
+  ), []);
 
   return (
     <View style={styles.container}>
@@ -25,11 +28,14 @@ export const SuggestedPostsSection = ({ posts }: { posts: SuggestedPost[] }) => 
           <Text style={[styles.seeAll, { color: colors.tint }]}>See All</Text>
         </TouchableOpacity>
       </View>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-        {posts.map((post, index) => (
-          <SuggestedPostCard key={getMappingKey(post.id, index)} post={post} />
-        ))}
-      </ScrollView>
+      <FlashList
+        horizontal
+        data={posts}
+        renderItem={renderItem}
+        showsHorizontalScrollIndicator={false}
+        keyExtractor={item => item.id}
+        contentContainerStyle={styles.scrollContent}
+      />
     </View>
   );
 };
