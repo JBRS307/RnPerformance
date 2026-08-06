@@ -1,40 +1,42 @@
-import { useCallback, useImperativeHandle, useRef, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
-  FlatList,
-  LayoutChangeEvent,
-  NativeScrollEvent,
-  NativeSyntheticEvent,
   StyleSheet,
   View,
 } from "react-native";
+import Animated, { SharedValue, useAnimatedScrollHandler, useAnimatedStyle, useSharedValue } from "react-native-reanimated";
+import { FlashList } from '@shopify/flash-list';
 
 import { FeedItem } from "@/components/feed/feed-item";
 import { SuggestedPostsSection } from "@/components/feed/suggestions/suggested-posts-section";
 import { FeedListItem } from "@/data/mock-feed";
+
+const AnimatedFlashList = Animated.createAnimatedComponent(FlashList<FeedListItem>);
+
+const PAGE_SIZE = 20;
 
 export const FeedList = ({
   data,
 }: {
   data: FeedListItem[];
 }) => {
-  const contentHeight = useRef(0);
-  const layoutHeight = useRef(0);
-  const progressRef = useRef<ProgressBarHandle>(null);
+  const progress = useSharedValue(0);
+  const [loadedCount, setLoadedCount] = useState(PAGE_SIZE)
 
-  const handleScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
-    const offset = e.nativeEvent.contentOffset.y;
-    const max = Math.max(1, contentHeight.current - layoutHeight.current);
+  const visibleData = useMemo(
+    () => data.slice(0, loadedCount),
+    [data, loadedCount]
+  );
+
+  const loadMore = useCallback(() => {
+    setLoadedCount(c => c >= data.length ? c : Math.min(c + PAGE_SIZE, data.length));
+  }, [data.length]);
+
+  const handleScroll = useAnimatedScrollHandler(event => {
+    const offset = event.contentOffset.y;
+    const max = Math.max(1, event.contentSize.height - event.layoutMeasurement.height);
     const p = Math.min(1, Math.max(0, offset / max));
-    progressRef.current?.updateProgress(p);
-  };
-
-  const handleContentSizeChange = (_w: number, h: number) => {
-    contentHeight.current = h;
-  };
-
-  const handleLayout = (e: LayoutChangeEvent) => {
-    layoutHeight.current = e.nativeEvent.layout.height;
-  };
+    progress.value = p;
+  });
 
   const renderItem = useCallback(({ item }: { item: FeedListItem }) => (
     item.type === 'suggestions' ? (
@@ -44,43 +46,32 @@ export const FeedList = ({
     )
   ), []);
 
+  const getItemType = useCallback((item: FeedListItem) => item.type, []);
+
   return (
     <View style={styles.wrapper}>
-      <ProgressBar ref={progressRef} />
-      <FlatList
-        data={data}
+      <ProgressBar progress={progress} />
+      <AnimatedFlashList
+        data={visibleData}
+        onEndReached={loadMore}
+        onEndReachedThreshold={0.5}
         renderItem={renderItem}
         keyExtractor={item => item.id}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.content}
-        windowSize={21}
-        maxToRenderPerBatch={10}
-        initialNumToRender={5}
-        removeClippedSubviews={false}
         onScroll={handleScroll}
         scrollEventThrottle={16}
-        onContentSizeChange={handleContentSizeChange}
-        onLayout={handleLayout}
+        getItemType={getItemType}
       />
     </View>
   );
 };
 
-interface ProgressBarHandle {
-  updateProgress: (progress: number) => void;
-}
-
-const ProgressBar = ({ ref }: { ref: React.Ref<ProgressBarHandle> }) => {
-  const [progress, setProgress] = useState(0);
-
-  useImperativeHandle(ref,
-    () => ({
-      updateProgress: (progress: number) => setProgress(progress),
-    }));
-
+const ProgressBar = ({ progress }: { progress: SharedValue<number> }) => {
+  const fillStyle = useAnimatedStyle(() => ({ width: `${progress.value * 100}%` }))
   return (
     <View style={styles.progressTrack}>
-      <View style={[styles.progressFill, { width: `${progress * 100}%` }]} />
+      <Animated.View style={[styles.progressFill, fillStyle]} />
     </View>
   );
 };

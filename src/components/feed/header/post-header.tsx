@@ -8,6 +8,7 @@ import { resized } from "@/utils/image-sizing";
 import { PostOptionsMenu } from "./post-options-menu";
 import { DEFAULT_BLURHASH } from "@/constants/theme";
 import { IconSymbol } from "@/components/ui/icon-symbol";
+import { useRecyclingState } from "@shopify/flash-list";
 
 const AVATAR_SIZE = 32;
 
@@ -28,7 +29,7 @@ export const PostHeader = ({
 }) => {
   const colors = useContext(ColorsContext);
   const router = useRouter();
-  const [showOptionsMenu, setShowOptionsMenu] = useState(false);
+  const [showOptionsMenu, setShowOptionsMenu] = useRecyclingState(false, [postId]);
   const [menuAnchor, setMenuAnchor] = useState<{ x: number; y: number } | undefined>();
 
   const openLocation = () => {

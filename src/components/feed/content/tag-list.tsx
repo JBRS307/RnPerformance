@@ -4,6 +4,7 @@ import { useRouter } from "expo-router";
 
 import { ColorsContext } from "@/context/colors-context";
 import { formatTags } from "@/utils/feed-utils";
+import { useMappingHelper } from "@shopify/flash-list";
 
 export const TagList = ({
   tags,
@@ -12,6 +13,7 @@ export const TagList = ({
 }) => {
   const colors = useContext(ColorsContext);
   const router = useRouter();
+  const { getMappingKey } = useMappingHelper();
 
   const formattedTags = useMemo(() => formatTags(tags), [tags]);
 
@@ -25,7 +27,7 @@ export const TagList = ({
   return (
     <View style={styles.container}>
       {formattedTags.map((tag, i) => (
-        <TouchableOpacity key={`${tag}-${i}`} onPress={() => openHashtag(tag)}>
+        <TouchableOpacity key={getMappingKey(tag, i)} onPress={() => openHashtag(tag)}>
           <Text style={{ fontSize: 13, color: colors.tint }}>{tag}</Text>
         </TouchableOpacity>
       ))}

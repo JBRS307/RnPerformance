@@ -13,6 +13,7 @@ import { PostCaption } from "./content/post-caption";
 import { PostTimestamp } from "./content/post-timestamp";
 import { TagList } from "./content/tag-list";
 import { PostHeader } from "./header/post-header";
+import { useRecyclingState } from "@shopify/flash-list";
 
 export const FeedItem = memo(function FeedItem({
   item,
@@ -21,7 +22,7 @@ export const FeedItem = memo(function FeedItem({
 }) {
   const colors = useContext(ColorsContext);
   const router = useRouter();
-  const [isHidden, setIsHidden] = useState(false);
+  const [isHidden, setIsHidden] = useRecyclingState(false, [item.id])
 
   if (isHidden) {
     return null;
@@ -47,6 +48,7 @@ export const FeedItem = memo(function FeedItem({
       />
 
       <ImageCarousel
+        postId={item.id}
         images={item.images}
         onImagePress={() => router.push(`/post/${item.id}`)}
       />

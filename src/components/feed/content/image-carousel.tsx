@@ -1,51 +1,69 @@
-import { useState, useContext } from "react";
-import { ScrollView, View, Pressable, NativeSyntheticEvent, NativeScrollEvent, StyleSheet } from "react-native";
+import { useCallback, useContext, useLayoutEffect, useRef } from "react";
+import { View, Pressable, NativeSyntheticEvent, NativeScrollEvent, StyleSheet, useWindowDimensions, LayoutChangeEvent } from "react-native";
 
 import { ColorsContext } from "@/context/colors-context";
 import { FeedImage } from "@/data/mock-feed";
 import { CarouselImage } from "./carousel-image";
-
-const IMAGE_WIDTH = 400;
+import { FlashList, FlashListRef, useMappingHelper, useRecyclingState } from "@shopify/flash-list";
 
 export const ImageCarousel = ({
+  postId,
   images,
   onImagePress,
 }: {
+  postId: string;
   images: FeedImage[];
   onImagePress?: () => void;
 }) => {
-  const [activeIndex, setActiveIndex] = useState(0);
+  const [activeIndex, setActiveIndex] = useRecyclingState(0, [postId]);
   const colors = useContext(ColorsContext);
+  const { getMappingKey } = useMappingHelper();
+  const listRef = useRef<FlashListRef<FeedImage>>(null);
+
+  const { width: windowWidth } = useWindowDimensions();
+  const [pageWidth, setPageWidth] = useRecyclingState(windowWidth, [postId]);
+
+  const handleLayout = useCallback((e: LayoutChangeEvent) => {
+    const { width } = e.nativeEvent.layout;
+    setPageWidth(prev => width > 0 && width !== prev ? width : prev);
+  }, []);
+
+  useLayoutEffect(() => {
+    listRef.current?.scrollToTop({ animated: false });
+  }, [postId])
 
   const handleScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
     const offset = e.nativeEvent.contentOffset.x;
-    const index = Math.round(offset / IMAGE_WIDTH);
+    const index = Math.round(offset / pageWidth);
     if (index !== activeIndex) {
       setActiveIndex(index);
     }
   };
 
+  const renderItem = useCallback(({ item }: { item: FeedImage }) => (
+    <Pressable onPress={onImagePress}>
+      <CarouselImage image={item} width={pageWidth} />
+    </Pressable>
+  ), [onImagePress, pageWidth]);
+
   return (
-    <View>
-      <ScrollView
+    <View onLayout={handleLayout}>
+      <FlashList
+        ref={listRef}
         horizontal
+        data={images}
+        renderItem={renderItem}
+        keyExtractor={item => item.uri}
         pagingEnabled
+        onMomentumScrollEnd={handleScroll}
         showsHorizontalScrollIndicator={false}
-        onScroll={handleScroll}
-        scrollEventThrottle={16}
-      >
-        {images.map((image, i) => (
-          <Pressable key={`${image.uri}-${i}`} onPress={onImagePress}>
-            <CarouselImage image={image} />
-          </Pressable>
-        ))}
-      </ScrollView>
+      />
 
       {images.length > 1 && (
         <View style={styles.dotsContainer}>
-          {images.map((_, i) => (
+          {images.map((img, i) => (
             <View
-              key={`dot-${i}`}
+              key={getMappingKey(`dot-${img.uri}`, i)}
               style={[
                 styles.dot,
                 i === activeIndex

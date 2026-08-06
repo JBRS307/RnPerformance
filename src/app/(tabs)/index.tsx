@@ -12,7 +12,7 @@ const HomeScreen = () => {
   const colorScheme = useColorScheme();
   const colors = useMemo(() => Colors[colorScheme ?? "light"], [colorScheme]);
 
-  const feedData = toSlimFeed(MOCK_FEED);
+  const feedData = useMemo(() => toSlimFeed(MOCK_FEED), []);
 
   return (
     <ColorsContext.Provider value={colors}>

@@ -5,13 +5,11 @@ import { FeedImage } from "@/data/mock-feed";
 import { resized } from "@/utils/image-sizing";
 import { DEFAULT_BLURHASH } from "@/constants/theme";
 
-const IMAGE_WIDTH = 400;
-
-export const CarouselImage = ({ image }: { image: FeedImage }) => (
-  <View>
+export const CarouselImage = ({ image, width }: { image: FeedImage, width: number }) => (
+  <View style={{ width }}>
     <Image
-      source={resized(image.uri, IMAGE_WIDTH)}
-      style={{ width: IMAGE_WIDTH, aspectRatio: image.aspectRatio }}
+      source={resized(image.uri, width)}
+      style={{ width, aspectRatio: image.aspectRatio }}
       placeholder={{ blurhash: DEFAULT_BLURHASH }}
     />
     <View style={styles.vignetteTop} />

@@ -1,4 +1,4 @@
-import { useState, useContext } from "react";
+import { useContext } from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { Image } from 'expo-image';
 import { useRouter } from "expo-router";
@@ -9,14 +9,15 @@ import { formatRelativeTime } from "@/utils/feed-utils";
 import { resized } from "@/utils/image-sizing";
 import { DEFAULT_BLURHASH } from "@/constants/theme";
 import { IconSymbol } from "@/components/ui/icon-symbol.ios";
+import { useRecyclingState } from "@shopify/flash-list";
 
 const AVATAR_SIZE = 28;
 
 export const CommentPreview = ({ comment, postId }: { comment: FeedComment; postId: string }) => {
   const colors = useContext(ColorsContext);
   const router = useRouter();
-  const [isLiked, setIsLiked] = useState(false);
-  const [likeCount, setLikeCount] = useState(comment.likes);
+  const [isLiked, setIsLiked] = useRecyclingState(false, [comment.id, postId]);
+  const [likeCount, setLikeCount] = useRecyclingState(comment.likes, [comment.id, postId]);
 
   const formattedTime = formatRelativeTime(comment.timestamp);
 

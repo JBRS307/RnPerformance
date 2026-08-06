@@ -7,6 +7,7 @@ import { ColorsContext } from "@/context/colors-context";
 import { SuggestedPost } from "@/data/mock-feed";
 import { resized } from "@/utils/image-sizing";
 import { DEFAULT_BLURHASH } from "@/constants/theme";
+import { useRecyclingState } from "@shopify/flash-list";
 
 const CARD_WIDTH = 160;
 const AVATAR_SIZE = 20;
@@ -14,7 +15,7 @@ const AVATAR_SIZE = 20;
 export const SuggestedPostCard = ({ post }: { post: SuggestedPost }) => {
   const colors = useContext(ColorsContext);
   const router = useRouter();
-  const [isFollowing, setIsFollowing] = useState(false);
+  const [isFollowing, setIsFollowing] = useRecyclingState(false, [post.id]);
 
   const openProfile = () => {
     router.push(`/profile/${post.username}`);
