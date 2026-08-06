@@ -38,7 +38,7 @@ export const ImageCarousel = ({
     <Pressable onPress={onImagePress}>
       <CarouselImage image={item} />
     </Pressable>
-  ), []);
+  ), [onImagePress]);
 
   return (
     <View>
