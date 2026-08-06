@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
   StyleSheet,
   View,
@@ -12,12 +12,24 @@ import { FeedListItem } from "@/data/mock-feed";
 
 const AnimatedFlashList = Animated.createAnimatedComponent(FlashList<FeedListItem>);
 
+const PAGE_SIZE = 20;
+
 export const FeedList = ({
   data,
 }: {
   data: FeedListItem[];
 }) => {
   const progress = useSharedValue(0);
+  const [loadedCount, setLoadedCount] = useState(PAGE_SIZE)
+
+  const visibleData = useMemo(
+    () => data.slice(0, loadedCount),
+    [data, loadedCount]
+  );
+
+  const loadMore = useCallback(() => {
+    setLoadedCount(c => c >= data.length ? c : Math.min(c + PAGE_SIZE, data.length));
+  }, [data.length]);
 
   const handleScroll = useAnimatedScrollHandler(event => {
     const offset = event.contentOffset.y;
@@ -40,7 +52,9 @@ export const FeedList = ({
     <View style={styles.wrapper}>
       <ProgressBar progress={progress} />
       <AnimatedFlashList
-        data={data}
+        data={visibleData}
+        onEndReached={loadMore}
+        onEndReachedThreshold={0.5}
         renderItem={renderItem}
         keyExtractor={item => item.id}
         showsVerticalScrollIndicator={false}
