@@ -45,7 +45,7 @@ export const ImageCarousel = ({
         scrollEventThrottle={16}
       >
         {images.map((image, index) => (
-          <Pressable key={getMappingKey(`${image.uri}-${index}`, index)} onPress={onImagePress}>
+          <Pressable key={getMappingKey(image.uri, index)} onPress={onImagePress}>
             <CarouselImage image={image} />
           </Pressable>
         ))}
@@ -53,9 +53,9 @@ export const ImageCarousel = ({
 
       {images.length > 1 && (
         <View style={styles.dotsContainer}>
-          {images.map((_, i) => (
+          {images.map((img, i) => (
             <View
-              key={getMappingKey(`dot-${i}`, i)}
+              key={getMappingKey(`dot-${img.uri}`, i)}
               style={[
                 styles.dot,
                 i === activeIndex

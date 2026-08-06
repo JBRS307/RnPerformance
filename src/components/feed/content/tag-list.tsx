@@ -27,7 +27,7 @@ export const TagList = ({
   return (
     <View style={styles.container}>
       {formattedTags.map((tag, i) => (
-        <TouchableOpacity key={getMappingKey(`${tag}-${i}`, i)} onPress={() => openHashtag(tag)}>
+        <TouchableOpacity key={getMappingKey(tag, i)} onPress={() => openHashtag(tag)}>
           <Text style={{ fontSize: 13, color: colors.tint }}>{tag}</Text>
         </TouchableOpacity>
       ))}
