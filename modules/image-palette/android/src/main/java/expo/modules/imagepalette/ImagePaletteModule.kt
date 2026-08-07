@@ -1,10 +1,9 @@
 package expo.modules.imagepalette
 
 import android.util.Log
-import expo.modules.kotlin.functions.Queues
 import expo.modules.kotlin.modules.Module
 import expo.modules.kotlin.modules.ModuleDefinition
-import android.os.Trace;
+import androidx.tracing.Trace
 
 class ImagePaletteModule : Module() {
 
@@ -85,7 +84,6 @@ class ImagePaletteModule : Module() {
         Trace.endSection();
       }
     }
-    // .runOnQueue(Queues.MAIN)
   }
 
   private fun respond(swatches: List<InternalSwatch>, config: Config): Map<String, Any> {
