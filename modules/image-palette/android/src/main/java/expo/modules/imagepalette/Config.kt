@@ -18,7 +18,7 @@ data class Config(
   var gridWidth: Int = 3,
   var gridHeight: Int = 3,
   var edgesOnly: Boolean = true,
-  var downsample: Boolean = false,
+  var downsample: Boolean = true,
   var downsampleTargetSize: Int = 200,
   var cache: Boolean = false
 ) {

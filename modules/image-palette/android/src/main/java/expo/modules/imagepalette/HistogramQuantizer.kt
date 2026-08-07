@@ -25,7 +25,8 @@ object HistogramQuantizer {
     val restoreOffset = restoreMult / 2
     val secondShift = bitsPerChannel * 2
 
-    val histograms = Array(gridWidth * gridHeight) { HashMap<Int, Int>(256) }
+    val binCount = 1 shl (bitsPerChannel * 3)
+    val histograms = Array(gridWidth * gridHeight) { IntArray(binCount) }
 
     for (y in 0 until height) {
       val row = minOf(y / cellHeight, gridHeight - 1)
@@ -45,7 +46,7 @@ object HistogramQuantizer {
         val key = (rq shl secondShift) or (gq shl bitsPerChannel) or bq
 
         val regionIndex = row * gridWidth + col
-        histograms[regionIndex][key] = (histograms[regionIndex][key] ?: 0) + 1
+        histograms[regionIndex][key]++
       }
     }
 
@@ -77,7 +78,7 @@ object HistogramQuantizer {
   }
 
   private fun pickSwatch(
-    histogram: HashMap<Int, Int>,
+    histogram: IntArray,
     row: Int,
     col: Int,
     channelMask: Int,
@@ -86,9 +87,11 @@ object HistogramQuantizer {
     secondShift: Int,
     bitsPerChannel: Int
   ): InternalSwatch {
-    var bestKey: Int? = null
+    var bestKey: Int = -1
     var bestScore: Double = -1.0
-    for ((key, population) in histogram) {
+    for (key in histogram.indices) {
+      val population = histogram[key]
+      if (population == 0) continue
       val rq = (key shr secondShift) and channelMask
       val gq = (key shr bitsPerChannel) and channelMask
       val bq = key and channelMask
@@ -103,12 +106,13 @@ object HistogramQuantizer {
       }
     }
 
-    val key = bestKey
-      ?: return InternalSwatch(row = row, col = col, r = 128, g = 128, b = 128, population = 1)
+    if (bestKey < 0) {
+      return InternalSwatch(row = row, col = col, r = 128, g = 128, b = 128, population = 1)
+    }
 
-    val rq = (key shr secondShift) and channelMask
-    val gq = (key shr bitsPerChannel) and channelMask
-    val bq = key and channelMask
+    val rq = (bestKey shr secondShift) and channelMask
+    val gq = (bestKey shr bitsPerChannel) and channelMask
+    val bq = bestKey and channelMask
     val baseR = rq * restoreMult + restoreOffset
     val baseG = gq * restoreMult + restoreOffset
     val baseB = bq * restoreMult + restoreOffset
@@ -119,7 +123,7 @@ object HistogramQuantizer {
       r = br,
       g = bg,
       b = bb,
-      population = histogram[key] ?: 1
+      population = histogram[bestKey] ?: 1
     )
   }
 }
