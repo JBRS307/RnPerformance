@@ -7,6 +7,8 @@ import ImagePalette from "image-palette";
 import { useBackdropData, type Palette } from "@/context/backdrop-data-context";
 import { useImmersive, useReactToImmersive } from "@/context/immersive-context";
 
+ImagePalette.configure({ downsample: true });
+
 const fetchPaletteFromNative = async (uri: string): Promise<Palette | null> => {
   await Image.prefetch(uri);
   const cachePath = await Image.getCachePathAsync(uri);
