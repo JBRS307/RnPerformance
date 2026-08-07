@@ -35,57 +35,41 @@ class ImagePaletteModule : Module() {
     }
 
     AsyncFunction("getDominantColors") { uri: String ->
-      Trace.beginSection("ImagePalette.getDominantColors");
-      try {
-        firstReadOccurred = true
-        val cfg = config.copy()
-        log("start")
+      firstReadOccurred = true
+      val cfg = config.copy()
+      log("start")
 
-        val key = PaletteKey.fromConfig(uri, cfg)
-        if (cfg.cache) {
-          paletteCache.get(key)?.let {
-            log("cache HIT")
-            return@AsyncFunction respond(it, cfg)
-          }
-          log("cache MISS")
+      val key = PaletteKey.fromConfig(uri, cfg)
+      if (cfg.cache) {
+        paletteCache.get(key)?.let {
+          log("cache HIT")
+          return@AsyncFunction respond(it, cfg)
         }
-
-        val path = if (uri.startsWith("file://")) uri.removePrefix("file://") else uri
-
-        Trace.beginSection("ImagePalette.decode")
-        val bitmap = try {
-          ImageDecoder.decode(path, cfg.downsample, cfg.downsampleTargetSize)
-            ?: return@AsyncFunction null
-        } finally {
-          Trace.endSection()
-        }
-
-        val decoded = ImageDecoder.extractARGB(bitmap)
-
-        Trace.beginSection("ImagePalette.quantizeHistogram")
-        val swatches = try {
-          HistogramQuantizer.quantize(
-            decoded,
-            cfg.gridWidth,
-            cfg.gridHeight,
-            cfg.edgesOnly,
-            cfg.bitsPerChannel
-          )
-        } finally {
-          Trace.endSection()
-        }
-
-        if (cfg.cache) {
-          paletteCache.set(key, swatches)
-        }
-
-        log("resolved")
-        respond(swatches, cfg)
-      } finally {
-        Trace.endSection();
+        log("cache MISS")
       }
+
+      val path = if (uri.startsWith("file://")) uri.removePrefix("file://") else uri
+
+      val bitmap = ImageDecoder.decode(path, cfg.downsample, cfg.downsampleTargetSize)
+          ?: return@AsyncFunction null
+
+      val decoded = ImageDecoder.extractARGB(bitmap)
+
+      val swatches = HistogramQuantizer.quantize(
+          decoded,
+          cfg.gridWidth,
+          cfg.gridHeight,
+          cfg.edgesOnly,
+          cfg.bitsPerChannel
+        )
+
+      if (cfg.cache) {
+        paletteCache.set(key, swatches)
+      }
+
+      log("resolved")
+      respond(swatches, cfg)
     }
-    // .runOnQueue(Queues.MAIN)
   }
 
   private fun respond(swatches: List<InternalSwatch>, config: Config): Map<String, Any> {
