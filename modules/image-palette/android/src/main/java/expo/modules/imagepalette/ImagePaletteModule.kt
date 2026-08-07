@@ -85,7 +85,7 @@ class ImagePaletteModule : Module() {
         Trace.endSection();
       }
     }
-    .runOnQueue(Queues.MAIN)
+    // .runOnQueue(Queues.MAIN)
   }
 
   private fun respond(swatches: List<InternalSwatch>, config: Config): Map<String, Any> {
