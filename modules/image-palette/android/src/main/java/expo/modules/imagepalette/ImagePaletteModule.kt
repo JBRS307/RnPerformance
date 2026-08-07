@@ -52,18 +52,28 @@ class ImagePaletteModule : Module() {
 
         val path = if (uri.startsWith("file://")) uri.removePrefix("file://") else uri
 
-        val bitmap = ImageDecoder.decode(path, cfg.downsample, cfg.downsampleTargetSize)
-          ?: return@AsyncFunction null
+        Trace.beginSection("ImagePalette.decode")
+        val bitmap = try {
+          ImageDecoder.decode(path, cfg.downsample, cfg.downsampleTargetSize)
+            ?: return@AsyncFunction null
+        } finally {
+          Trace.endSection()
+        }
 
         val decoded = ImageDecoder.extractARGB(bitmap)
 
-        val swatches = HistogramQuantizer.quantize(
-          decoded,
-          cfg.gridWidth,
-          cfg.gridHeight,
-          cfg.edgesOnly,
-          cfg.bitsPerChannel
-        )
+        Trace.beginSection("ImagePalette.quantizeHistogram")
+        val swatches = try {
+          HistogramQuantizer.quantize(
+            decoded,
+            cfg.gridWidth,
+            cfg.gridHeight,
+            cfg.edgesOnly,
+            cfg.bitsPerChannel
+          )
+        } finally {
+          Trace.endSection()
+        }
 
         if (cfg.cache) {
           paletteCache.set(key, swatches)
