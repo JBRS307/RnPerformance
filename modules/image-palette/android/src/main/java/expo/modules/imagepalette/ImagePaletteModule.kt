@@ -1,10 +1,12 @@
 package expo.modules.imagepalette
 
+import androidx.tracing.Trace
 import android.util.Log
-import expo.modules.kotlin.functions.Queues
+import expo.modules.kotlin.KPromiseWrapper
+import expo.modules.kotlin.Promise
 import expo.modules.kotlin.modules.Module
 import expo.modules.kotlin.modules.ModuleDefinition
-import android.os.Trace;
+import kotlin.concurrent.thread
 
 class ImagePaletteModule : Module() {
 
@@ -34,41 +36,56 @@ class ImagePaletteModule : Module() {
       warnings.forEach { log("configure: $it — ignored") }
     }
 
-    AsyncFunction("getDominantColors") { uri: String ->
-      firstReadOccurred = true
-      val cfg = config.copy()
-      log("start")
+    AsyncFunction("getDominantColors") { uri: String, promise: Promise ->
+      val cookie = uri.hashCode()
+      Trace.beginAsyncSection("ImagePalette.request", cookie)
+      thread {
+        try {
+          firstReadOccurred = true
+          val cfg = config.copy()
+          log("start")
 
-      val key = PaletteKey.fromConfig(uri, cfg)
-      if (cfg.cache) {
-        paletteCache.get(key)?.let {
-          log("cache HIT")
-          return@AsyncFunction respond(it, cfg)
+          val key = PaletteKey.fromConfig(uri, cfg)
+          if (cfg.cache) {
+            paletteCache.get(key)?.let {
+              log("cache HIT")
+              promise.resolve(respond(it, cfg))
+              return@thread
+            }
+            log("cache MISS")
+          }
+
+          val path = if (uri.startsWith("file://")) uri.removePrefix("file://") else uri
+
+          val bitmap = ImageDecoder.decode(path, cfg.downsample, cfg.downsampleTargetSize)
+          if (bitmap == null) {
+            promise.resolve(null)
+            return@thread
+          }
+
+          val decoded = ImageDecoder.extractARGB(bitmap)
+
+          val swatches = HistogramQuantizer.quantize(
+            decoded,
+            cfg.gridWidth,
+            cfg.gridHeight,
+            cfg.edgesOnly,
+            cfg.bitsPerChannel
+          )
+
+          if (cfg.cache) {
+            paletteCache.set(key, swatches)
+          }
+
+          log("resolved")
+          promise.resolve(respond(swatches, cfg))
+        } catch (e: Throwable) {
+          promise.reject("ERR_PALETTE", e.message ?: "palette extraction failed", e)
+        } finally {
+          Trace.endAsyncSection("ImagePalette.request", cookie)
         }
-        log("cache MISS")
+
       }
-
-      val path = if (uri.startsWith("file://")) uri.removePrefix("file://") else uri
-
-      val bitmap = ImageDecoder.decode(path, cfg.downsample, cfg.downsampleTargetSize)
-          ?: return@AsyncFunction null
-
-      val decoded = ImageDecoder.extractARGB(bitmap)
-
-      val swatches = HistogramQuantizer.quantize(
-          decoded,
-          cfg.gridWidth,
-          cfg.gridHeight,
-          cfg.edgesOnly,
-          cfg.bitsPerChannel
-        )
-
-      if (cfg.cache) {
-        paletteCache.set(key, swatches)
-      }
-
-      log("resolved")
-      respond(swatches, cfg)
     }
   }
 
